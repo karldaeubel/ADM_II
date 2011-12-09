@@ -8,6 +8,6 @@ public class test {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("Hallo Git!!!/nfunktioniert auch der eclipse account?");
+		System.out.println("Hallo Git!!!/nfunktioniert auch der eclipse account?edit");
 	}
 }
