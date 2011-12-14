@@ -535,7 +535,7 @@ public class LPReader
 	    }
 	 }
       }
-
+      
       private boolean parseLinComb (String expr, Constraint target, int lineNo)
 	 throws ParseException
       {
