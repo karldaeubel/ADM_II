@@ -5,6 +5,8 @@ public class FracBigInt {
 
 	private BigInteger num;
 	private BigInteger denom;
+	public static final FracBigInt ONE = new FracBigInt("1","1");
+	public static final FracBigInt ZERO = new FracBigInt();
 
 	public FracBigInt(String n) {
 		num = new BigInteger(n);
@@ -109,6 +111,11 @@ public class FracBigInt {
 		return ((double) num.intValue())/((double) denom.intValue());
 	}
 	
+	public void invert(){
+		BigInteger temp = new BigInteger(num.toString());
+		num = new BigInteger(denom.toString());
+		denom = new BigInteger(temp.toString());
+	}
 	
 	public static void main(String[] args) {
 		FracBigInt test = new FracBigInt(2.232);
