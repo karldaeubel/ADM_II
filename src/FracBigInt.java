@@ -30,7 +30,7 @@ public class FracBigInt {
 	public FracBigInt(double x){
 		String s = Double.toString(x);
 		String[] split = s.split("\\.");
-		System.out.println(Arrays.toString(split)+" "+s);
+		//System.out.println(Arrays.toString(split)+" "+s);
 		num = new BigInteger(split[0]+split[1]);
 		denom = new BigInteger(Long.toString((Math.round(Math.pow(10,split[1].length())))));
 		this.simplify();
@@ -105,9 +105,15 @@ public class FracBigInt {
 		return denom;
 	}
 
+	public double toDouble(){
+		return ((double) num.intValue())/((double) denom.intValue());
+	}
+	
+	
 	public static void main(String[] args) {
 		FracBigInt test = new FracBigInt(2.232);
 		System.out.println(test.toString());
+		System.out.println(Double.toString(test.toDouble()));
 		/*
 		FracBigInt test = new FracBigInt(args[0], args[1]);
 		FracBigInt test2 = new FracBigInt(args[2], args[3]);
