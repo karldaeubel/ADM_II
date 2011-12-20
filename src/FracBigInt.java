@@ -1,7 +1,7 @@
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public class FracBigInt {
+public class FracBigInt implements Comparable<FracBigInt> {
 
 	private BigInteger num;
 	private BigInteger denom;
@@ -129,6 +129,11 @@ public class FracBigInt {
 		System.out.println((test.multiply(test2)).toString());
 		System.out.println((test.substract(test2)).toString());
 		*/
+	}
+
+	@Override
+	public int compareTo(FracBigInt o) {
+		return this.num.multiply(o.denom).compareTo(this.denom.multiply(o.num)); 
 	}
 
 }
