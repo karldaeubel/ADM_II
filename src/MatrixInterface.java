@@ -15,4 +15,13 @@ public interface MatrixInterface {
 	
 	public void gaussStep(MatrixInterface x, int row);
 	
+	public void set(int i, int j, FracBigInt value);
+	
+	public FracBigInt get(int i, int j);
+	
+	public String toString();
+	
+	public int getM();
+	
+	public int getN();
 }

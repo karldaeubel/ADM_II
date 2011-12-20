@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 
 public class Matrix implements MatrixInterface {
 
@@ -70,4 +72,37 @@ public class Matrix implements MatrixInterface {
 
 	}
 
+
+	@Override
+	public FracBigInt get(int i, int j) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	public void set(int i, int j, FracBigInt value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public int getM() {
+		return this.matrix.length;
+	}
+
+
+	@Override
+	public int getN() {
+		return this.matrix[0].length;
+	}
+	
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		for(int i = 0; i < this.matrix.length; i++) {
+			b.append(Arrays.toString(matrix[i]) + "\n");
+		}
+		return b.toString();
+	}
 }
