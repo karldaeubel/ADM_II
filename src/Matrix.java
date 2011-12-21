@@ -135,10 +135,25 @@ public class Matrix implements MatrixInterface {
 		return result;
 	}
 
+	/**
+	 * needs a Carry-Matrix
+	 * computes one Gauss-Step for the vector x_s=x
+	 * @param x the vector in the tableau with negative reduced cost coefficient multiplied with B^-1
+	 */
 	@Override
 	public void gaussStep(MatrixInterface x) {
 		Matrix b = (Matrix) this.of(1,this.m,0,0);
-		//TODO fertig implementieren
+		int r = (b.dividePW(x.of(1, x.getM(), 0, 0))).argmin()[0];
+		FracBigInt xrs = x.get(r,0).invert();
+		Matrix rowr = (Matrix) this.of(r, r, 0, this.n);
+		for ( int i=0 ; i<this.m ; i++ ){
+			if ( i==r ){
+				this.set(i,i,0,this.n,this.of(i,i,0,this.n).multiply(xrs));
+			}
+			else{
+				this.set(i,i,0,this.n,this.of(i,i,0,this.n).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
+			}
+		}
 
 	}
 
@@ -157,7 +172,7 @@ public class Matrix implements MatrixInterface {
 		return result;
 	}
 	
-	private Matrix dividePW(Matrix matrix){
+	private Matrix dividePW(MatrixInterface matrix){
 		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
 			throw new IllegalArgumentException("Matrizen passen nicht");
 		}
@@ -227,5 +242,19 @@ public class Matrix implements MatrixInterface {
 		testmatrix2.set(1,1,new FracBigInt("-2","1"));
 		System.out.println(testmatrix.dividePW(testmatrix2));
 		System.out.println(testmatrix.dividePW(testmatrix2).min());
+	}
+
+	@Override
+	public MatrixInterface add(MatrixInterface matrix) {
+		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
+			throw new IllegalArgumentException("Matrix hat falsche Grš§e");
+		}
+		Matrix result = new Matrix(this.m,this.n);
+		for ( int i=0 ; i<this.m ; i++ ){
+			for ( int j=0 ; j<this.n ; j++ ){
+				result.matrix[i][j] = this.matrix[i][j].add(matrix.get(i, j));
+			}
+		}
+		return result;
 	}
 }

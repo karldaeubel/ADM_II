@@ -24,4 +24,6 @@ public interface MatrixInterface {
 	public int getM();
 	
 	public int getN();
+	
+	public MatrixInterface add( MatrixInterface matrix );
 }
