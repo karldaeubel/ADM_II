@@ -95,7 +95,15 @@ public class Matrix implements MatrixInterface {
 		FracBigInt min = this.matrix[0][0];
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if( this.matrix[i][j].compareTo(min) < 0){
+				if ( this.matrix[i][j] != null && this.matrix[i][j].compareTo(FracBigInt.ZERO)>0){
+					min = this.matrix[i][j];
+					break;
+				}
+			}
+		}
+		for ( int i = 0 ; i<this.m ; i++ ){
+			for ( int j = 0 ; j<this.n ; j++ ){
+				if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0 && matrix[i][j].compareTo(FracBigInt.ZERO)>0){
 					min=this.matrix[i][j];
 				}
 			}
@@ -109,7 +117,15 @@ public class Matrix implements MatrixInterface {
 		FracBigInt min = this.matrix[0][0];
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if( this.matrix[i][j].compareTo(min) < 0){
+				if ( (this.matrix[i][j] != null) && (this.matrix[i][j].compareTo(FracBigInt.ZERO)>0)){
+					min = this.matrix[i][j];
+					break;
+				}
+			}
+		}
+		for ( int i = 0 ; i<this.m ; i++ ){
+			for ( int j = 0 ; j<this.n ; j++ ){
+				if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0 && this.matrix[i][j].compareTo(FracBigInt.ZERO)>0){
 					min=this.matrix[i][j];
 					result[0] = i;
 					result[1] = j;
@@ -150,7 +166,7 @@ public class Matrix implements MatrixInterface {
 		
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if ( matrix.get(i, j).compareTo(new FracBigInt())>0){
+				if ( matrix.get(i,j).compareTo(FracBigInt.ZERO)>0 ){
 					result.matrix[i][j] = this.matrix[i][j].multiply(matrix.get(i,j).invert()).clone();
 				}
 			}
@@ -203,6 +219,13 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix2);
 		System.out.println(testmatrix.multiply(testmatrix2));
 		System.out.println(testmatrix.of(0,1,0,0));
-		
+		System.out.println(testmatrix.min());
+		System.out.println(Arrays.toString(testmatrix.argmin()));
+		System.out.println(testmatrix.multiplyPW(testmatrix2));
+		System.out.println(testmatrix.dividePW(testmatrix2));
+		System.out.println(new Matrix(2,2));
+		testmatrix2.set(1,1,new FracBigInt("-2","1"));
+		System.out.println(testmatrix.dividePW(testmatrix2));
+		System.out.println(testmatrix.dividePW(testmatrix2).min());
 	}
 }

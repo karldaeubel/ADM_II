@@ -83,6 +83,9 @@ public class FracBigInt implements Comparable<FracBigInt> {
 	}
 
 	public String toString() {
+		if ( this == null ){
+			return "null";
+		}
 		String str;
 		if (!denom.equals(BigInteger.ONE))
 			str = num.toString() + "/" + denom.toString();
@@ -112,6 +115,9 @@ public class FracBigInt implements Comparable<FracBigInt> {
 	}
 	
 	public FracBigInt invert(){
+		if ( this.num.equals(BigInteger.ZERO) ){
+			throw new IllegalArgumentException("0 kann nicht invertiert werden");
+		}
 		return new FracBigInt(this.denom.toString(),this.num.toString());
 	}
 	
