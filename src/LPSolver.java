@@ -12,7 +12,7 @@ public class LPSolver {
 	private Matrix Carry;
 	
 	public LPSolver() {
-		System.out.println("----------Start the Program----------");
+		System.out.println("----------Start the Program!----------");
 		lp = new LPReader("/home/karl/Desktop/test.lp", false);
 		try {	
 				long start = System.nanoTime();
