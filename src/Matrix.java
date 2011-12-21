@@ -68,12 +68,13 @@ public class Matrix implements MatrixInterface {
 
 	@Override
 	public MatrixInterface multiply(FracBigInt factor) {
+		Matrix result = new Matrix(this.m,this.n);
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				this.matrix[i][j] = this.matrix[i][j].multiply(factor);
+				result.matrix[i][j] = this.matrix[i][j].multiply(factor);
 			}
 		}
-		return this.clone();
+		return result;
 	}
 
 	@Override
@@ -139,22 +140,24 @@ public class Matrix implements MatrixInterface {
 	 * needs a Carry-Matrix
 	 * computes one Gauss-Step for the vector x_s=x
 	 * @param x the vector in the tableau with negative reduced cost coefficient multiplied with B^-1
+	 * @return r the position of the basis vector that has changed
 	 */
 	@Override
-	public void gaussStep(MatrixInterface x) {
-		Matrix b = (Matrix) this.of(1,this.m,0,0);
-		int r = (b.dividePW(x.of(1, x.getM(), 0, 0))).argmin()[0];
+	public int gaussStep(MatrixInterface x) {
+		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
+		int r = (b.dividePW(x.of(1, x.getM()-1, 0, 0))).argmin()[0];
+		r++;
 		FracBigInt xrs = x.get(r,0).invert();
-		Matrix rowr = (Matrix) this.of(r, r, 0, this.n);
+		Matrix rowr = (Matrix) this.of(r, r, 0, this.n-1);
 		for ( int i=0 ; i<this.m ; i++ ){
 			if ( i==r ){
-				this.set(i,i,0,this.n,this.of(i,i,0,this.n).multiply(xrs));
+				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).multiply(xrs));
 			}
 			else{
-				this.set(i,i,0,this.n,this.of(i,i,0,this.n).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
+				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
 			}
 		}
-
+		return r;
 	}
 
 	private Matrix multiplyPW(Matrix matrix){
@@ -224,8 +227,22 @@ public class Matrix implements MatrixInterface {
 		return new Matrix(this.matrix);
 	}
 	
+	@Override
+	public MatrixInterface add(MatrixInterface matrix) {
+		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
+			throw new IllegalArgumentException("Matrix hat falsche Grš§e");
+		}
+		Matrix result = new Matrix(this.m,this.n);
+		for ( int i=0 ; i<this.m ; i++ ){
+			for ( int j=0 ; j<this.n ; j++ ){
+				result.matrix[i][j] = this.matrix[i][j].add(matrix.get(i, j));
+			}
+		}
+		return result;
+	}
 	
 	public static void main(String[] args){
+		/*
 		FracBigInt[][] test = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("3"),new FracBigInt("4")}};
 		Matrix testmatrix = new Matrix(test);
 		FracBigInt[][] test2 = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("1"),new FracBigInt("2")}};
@@ -242,19 +259,19 @@ public class Matrix implements MatrixInterface {
 		testmatrix2.set(1,1,new FracBigInt("-2","1"));
 		System.out.println(testmatrix.dividePW(testmatrix2));
 		System.out.println(testmatrix.dividePW(testmatrix2).min());
+		System.out.println(testmatrix.add(testmatrix2));
+		*/
+		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
+		Matrix carry = new Matrix(carryarray);
+		FracBigInt[][] xarray = {{new FracBigInt("-5")},{new FracBigInt("1")},{new FracBigInt("2")},{new FracBigInt("4")}};
+		Matrix x = new Matrix(xarray);
+		System.out.println(carry);
+		System.out.println(x);
+		System.out.println(carry.gaussStep(x));
+		System.out.println(carry);
+		
+		
 	}
 
-	@Override
-	public MatrixInterface add(MatrixInterface matrix) {
-		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
-			throw new IllegalArgumentException("Matrix hat falsche Grš§e");
-		}
-		Matrix result = new Matrix(this.m,this.n);
-		for ( int i=0 ; i<this.m ; i++ ){
-			for ( int j=0 ; j<this.n ; j++ ){
-				result.matrix[i][j] = this.matrix[i][j].add(matrix.get(i, j));
-			}
-		}
-		return result;
-	}
+	
 }
