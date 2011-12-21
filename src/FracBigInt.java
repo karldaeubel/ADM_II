@@ -111,10 +111,8 @@ public class FracBigInt implements Comparable<FracBigInt> {
 		return ((double) num.intValue())/((double) denom.intValue());
 	}
 	
-	public void invert(){
-		BigInteger temp = new BigInteger(num.toString());
-		num = new BigInteger(denom.toString());
-		denom = new BigInteger(temp.toString());
+	public FracBigInt invert(){
+		return new FracBigInt(this.denom.toString(),this.num.toString());
 	}
 	
 	public static void main(String[] args) {

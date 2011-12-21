@@ -13,7 +13,7 @@ public interface MatrixInterface {
 	
 	public int[] argmin();
 	
-	public void gaussStep(MatrixInterface x, int row);
+	public void gaussStep(MatrixInterface x);
 	
 	public void set(int i, int j, FracBigInt value);
 	
