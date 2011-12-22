@@ -118,6 +118,10 @@ public class Matrix implements MatrixInterface {
 		result[0]=-1;
 		result[1]=-1;
 		FracBigInt min = this.matrix[0][0];
+		if ( min != null ){
+			result[0] = 0;
+			result[1] = 0;
+		}
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
 				if ( min == null ){
