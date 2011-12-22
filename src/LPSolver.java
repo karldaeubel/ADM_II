@@ -13,7 +13,7 @@ public class LPSolver {
 	
 	public LPSolver() {
 		System.out.println("----------Start the Program!----------");
-		lp = new LPReader("/home/karl/Desktop/test.lp", false);
+		lp = new LPReader("/home/karl/Desktop/t.lp", false);
 		try {	
 				long start = System.nanoTime();
 				lp.readLP();
@@ -47,6 +47,7 @@ public class LPSolver {
 	}
 
 	private Matrix PhaseI() {
+		System.out.println("|----------PhaseI gestartet----------|");
 		int m = lp.noOfConstraints();
 		int noOfGE = 0;
 		int noOfLE = 0;
@@ -171,9 +172,9 @@ public class LPSolver {
 			c[0][i] = new FracBigInt("0");
 			if(B[i] <= lp.noOfVariables()) {
 				if(lp.objectiveSense() == LPReader.SENSE_MAX) {
-					c[0][i] = (new FracBigInt(lp.objectiveVector()[i])).multiply(new FracBigInt("-1"));
+					c[0][i] = (new FracBigInt(lp.objectiveVector()[B[i] -1])).multiply(new FracBigInt("-1"));
 				}else {
-					c[0][i] = (new FracBigInt(lp.objectiveVector()[i]));
+					c[0][i] = (new FracBigInt(lp.objectiveVector()[B[i] -1]));
 				}
 			}
 		}
@@ -181,7 +182,9 @@ public class LPSolver {
 		Matrix pi = (Matrix) C.multiply(Carry.of(1, m, 1, m));
 		Carry.set(0, 0, 1, m, pi);
 		Carry.set(0, 0, 0, 0, C.multiply(Carry.of(1, m, 0, 0)).multiply(new FracBigInt("-1")));
-
+		
+		System.out.println("|----------PhaseI beendet---------|");
+		
 		x = PhaseII(B,N);
 		FracBigInt[][] s = new FracBigInt[1][lp.noOfVariables()];
 		for(int i = 0; i < s[0].length; i++) {
@@ -196,6 +199,7 @@ public class LPSolver {
 	}
 	
 	public Matrix PhaseII(int[] B, int[] N) {
+		System.out.println("|----------PhaseII gestartet---------|");
 		int m = lp.noOfConstraints();
 		
 
@@ -212,6 +216,7 @@ public class LPSolver {
 				}
 			}
 			if(k == -1) {
+				System.out.println("|----------PhaseII beendet---------|");
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
 			Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, N[k], N[k]));
@@ -237,6 +242,7 @@ public class LPSolver {
 			}
 			Matrix P = new Matrix(p);
 			Carry = (Matrix) P.multiply(Carry);
+			System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));
 		}
 	}
 	
