@@ -11,9 +11,9 @@ public class LPSolver {
 	
 	private Matrix Carry;
 	
-	public LPSolver() {
+	public LPSolver(String file) {
 		System.out.println("----------Start the Program!----------");
-		lp = new LPReader("/home/karl/Desktop/t.lp", false);
+		lp = new LPReader(file, false);
 		try {	
 				long start = System.nanoTime();
 				lp.readLP();
@@ -183,7 +183,7 @@ public class LPSolver {
 		Carry.set(0, 0, 1, m, pi);
 		Carry.set(0, 0, 0, 0, C.multiply(Carry.of(1, m, 0, 0)).multiply(new FracBigInt("-1")));
 		
-		System.out.println("|----------PhaseI beendet---------|");
+		System.out.println("|----------PhaseI beendet------------|");
 		
 		x = PhaseII(B,N);
 		FracBigInt[][] s = new FracBigInt[1][lp.noOfVariables()];
@@ -216,16 +216,20 @@ public class LPSolver {
 				}
 			}
 			if(k == -1) {
-				System.out.println("|----------PhaseII beendet---------|");
+				System.out.println("|----------PhaseII beendet-----------|");
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
 			Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, N[k], N[k]));
-			int r = argmin((Matrix) Carry.of(1, m, 0, 0), x);
+			Matrix y = new Matrix(new FracBigInt[m +1][1]);
+			y.set(0, 0, c_j);
+			y.set(1, m, 0, 0, x);
+			int r = Carry.gaussStep(y);
+			//int r = argmin((Matrix) Carry.of(1, m, 0, 0), x);
 			if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 			int temp = B[r -1];
 			B[r -1] = N[k];
 			N[k] = temp;
-			FracBigInt[][] p = new FracBigInt[m +1][m +1];
+			/*FracBigInt[][] p = new FracBigInt[m +1][m +1];
 			for(int i = 0; i < m +1; i++) {
 				for(int j = 0; j < m +1; j++) {
 					p[i][j] = new FracBigInt("0");
@@ -242,6 +246,7 @@ public class LPSolver {
 			}
 			Matrix P = new Matrix(p);
 			Carry = (Matrix) P.multiply(Carry);
+			*/
 			System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));
 		}
 	}
@@ -258,5 +263,18 @@ public class LPSolver {
 			}
 		}
 		return result;
+	}
+	
+	public static void main(String[] args) {
+		if(args.length == 0) {
+			LPSolver lp = new LPSolver("/home/karl/Desktop/t.lp");
+			lp.solve();
+		}else {
+			for(int i = 0; i < args.length; i++) {
+				System.out.println("Datei: " + args[i]);
+				LPSolver s = new LPSolver(args[i]);
+				s.solve();
+			}
+		}
 	}
 }
