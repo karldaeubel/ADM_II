@@ -120,23 +120,29 @@ public class Matrix implements MatrixInterface {
 		FracBigInt min = this.matrix[0][0];
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if ( (this.matrix[i][j] != null)){
-					min = this.matrix[i][j];
-					result[0] = i;
-					result[1] = j;
-					break;
+				if ( min == null ){
+					if ( (this.matrix[i][j] != null)){
+						min = this.matrix[i][j];
+						result[0] = i;
+						result[1] = j;
+					}
+				}
+				else{
+					if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0){
+						min=this.matrix[i][j];
+						result[0] = i;
+						result[1] = j;
+					}
 				}
 			}
 		}
+		/**
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0){
-					min=this.matrix[i][j];
-					result[0] = i;
-					result[1] = j;
-				}
+				
 			}
 		}
+		*/
 		return result;
 	}
 
