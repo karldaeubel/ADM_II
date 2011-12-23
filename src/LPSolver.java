@@ -158,7 +158,7 @@ public class LPSolver {
 				i--;
 			}
 		}
-		
+
 		Matrix b_ = (Matrix) A.of(0, m, 0, 0);
 		Matrix A_ = (Matrix) A.of(0, m, m +1, A.getN() -1);
 		A = new Matrix(new FracBigInt[m +1][b_.getN() + A_.getN()]);
