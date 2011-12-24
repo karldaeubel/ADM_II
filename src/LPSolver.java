@@ -12,6 +12,8 @@ public class LPSolver {
 	
 	private Matrix Carry;
 	
+	private int noOfArti;
+	
 	public LPSolver(String file) {
 		System.out.println("----------Start the Program!----------");
 		lp = new LPReader(file, false);
@@ -65,6 +67,7 @@ public class LPSolver {
 				noOfEq++;
 			}
 		}
+		noOfArti = lp.noOfConstraints();
 		int n = m + lp.noOfVariables() + noOfGE + noOfLE;
 		
 		A = new Matrix(new FracBigInt[m +1][n +1]);
@@ -141,7 +144,7 @@ public class LPSolver {
 			}
 		}
 		
-		
+		noOfArti = 0;
 		for(int i = 0; i < m; i++) {
 			B[i] = B[i] -m;
 		}
@@ -246,11 +249,13 @@ public class LPSolver {
 				y.set(1, m, 0, 0, x);
 		//TODO korrekte implementierung in derMatrix klasse...
 		//int r = Carry.gaussStep(y);
-				int r = step();
+				int r = step(y,B, k);
+				
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 				if(r < m +1) {
 					int temp = B[r -1];
 					B[r -1] = L.remove(k);
+					
 					if(x.get(r -1, k).compareTo(FracBigInt.ZERO) > 0) {
 						L.add(k,temp);
 					}else {
@@ -267,7 +272,7 @@ public class LPSolver {
 				y.set(1, m, 0, 0, x);
 		//TODO korrekte implementierung in derMatrix klasse...
 		//int r = Carry.gaussStep(y);
-				int r = step();
+				int r = step(y, B, k);
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 				if(r < m +1) {
 					int temp = B[r -1];
@@ -331,8 +336,37 @@ public class LPSolver {
 		}
 	}
 	
-	public int step() {
+	public int step(Matrix x, int[] B, int k) {
+		int result = -1;
+		Matrix b = (Matrix) Carry.of(1, lp.noOfConstraints(), 0, 0);
+		FracBigInt min = new FracBigInt("10000000");
+		if(x.get(0, 0).compareTo(FracBigInt.ZERO) < 0) {
+			for(int i = 1; i < x.getM(); i++) {
+				if(x.get(i, 0).compareTo(FracBigInt.ZERO) > 0) {
+					if(b.get(i -1, 0).divide(x.get(i, 0)).compareTo(min) == -1) {
+						min = b.get(i -1, 0).divide(x.get(i, 0));
+						result = i;
+					}
+				}else if(x.get(i, 0).compareTo(FracBigInt.ZERO) < 0) {
+					if(B[i -1] > noOfArti && B[i -1] <= noOfArti + lp.noOfVariables() && !Double.isInfinite(lp.ubound[B[i -1]])) {
+						if(((new FracBigInt(lp.ubound[B[i -1]])).substract(b.get(i -1, 0))).divide(x.get(i,0)).compareTo(min) == -1) {
+							min = ((new FracBigInt(lp.ubound[B[i -1]])).substract(b.get(i -1, 0))).divide(x.get(i,0));
+							result = i;
+						}
+					}
+				}
+			}
+			if(k > noOfArti && k <= noOfArti + lp.noOfVariables()) {
+				if(!Double.isInfinite(lp.ubound[k - noOfArti])) {
+					result = (((min.compareTo(new FracBigInt(lp.ubound[k]))) > 0)? lp.noOfConstraints() +1: result);
+				}
+			}
+		}else {
+			
+		}
 		
-		return 0;
+		return result;
 	}
 }
+
+	
