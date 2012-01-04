@@ -44,10 +44,10 @@ public class LPSolver {
 			System.out.println("Das LP hat folgede optimale Lösung:\n");
 			FracBigInt sum = new FracBigInt("0");
 			for(int i = 0; i < x.getN(); i++) {
-				System.out.println("x_" + (i +1) + " = " + x.get(0, i));
+				System.out.println("x_" + (i +1) + " = " + x.get(0, i).toDouble());
 				sum = sum.add(x.get(0, i).multiply(new FracBigInt(lp.objectiveVector()[i])));
 			}
-			System.out.println("\nZFW: " + sum);
+			System.out.println("\nZFW: " + sum.toDouble());
 		}
 		System.out.println("Das Lösen des Problems hat " + (stop - start)/1000000. + " ms gedauert!");
 	}
@@ -108,7 +108,7 @@ public class LPSolver {
 			}
 		}
 		
-		FracBigInt sum = new FracBigInt("0");
+		FracBigInt sum = FracBigInt.ZERO;
 		int count = 0;
 		for(int i = 0; i < m; i++) {
 			zero[i +1][0] = new FracBigInt(lp.rhs[i]);
@@ -186,12 +186,8 @@ public class LPSolver {
 				At = (Matrix) Carry.of(i +1, i +1, 1, m).multiply(A.of(1, m, 0, A.getN() -1));
 				int t = -1;
 				for(int j = noOfArti +1; j < At.getN(); j++) {
-					FracBigInt za = At.get(0, j);
 					if(At.get(0, j).compareTo(FracBigInt.ZERO) != 0) {
-						Matrix ua = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, j, j));
 						gauss((Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, j, j)),i +1);
-						At = (Matrix) Carry.of(i +1, i +1, 1, m).multiply(A.of(1, m, 0, A.getN() -1));
-						ua = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, j, j));
 						t = j;
 						break;
 					}
@@ -425,7 +421,7 @@ public class LPSolver {
 	
 	public static void main(String[] args) {
 		if(args.length == 0) {
-			LPSolver lp = new LPSolver("/home/karl/Desktop/fit2d.lp");
+			LPSolver lp = new LPSolver("/homes/stud/daeubel/Desktop/ADMII/kb2.lp");
 			lp.solve();
 		}else {
 			for(int i = 0; i < args.length; i++) {

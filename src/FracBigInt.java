@@ -111,7 +111,7 @@ public class FracBigInt implements Comparable<FracBigInt> {
 	}
 
 	public double toDouble(){
-		return ((double) num.intValue())/((double) denom.intValue());
+		return ((double) num.longValue())/((double) denom.longValue());
 	}
 	
 	public FracBigInt invert(){
