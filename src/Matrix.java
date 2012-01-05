@@ -255,8 +255,44 @@ public class Matrix implements MatrixInterface {
 		return result;
 	}
 	
+	public void remove(int i, int j){
+		Matrix ul = null;
+		Matrix ur = null;
+		Matrix ll = null;
+		Matrix lr = null;
+		
+		if ( i > 0 && j > 0 ){
+			ul = (Matrix) this.of(0, i-1, 0, j-1);
+		}
+		if ( i > 0 && j+1 < this.n){
+			ur = (Matrix) this.of(0, i-1, j+1, this.n-1);
+		}
+		if ( i+1 < this.m && j > 0 ){
+			ll = (Matrix) this.of(i+1, this.m-1, 0, j-1);
+		}
+		if ( i+1 < this.m && j+1 < this.n ){
+			lr = (Matrix) this.of(i+1, this.m-1, j+1, this.n-1);
+		}
+		
+		this.matrix = new FracBigInt[this.m-1][this.n-1];
+		this.m--;
+		this.n--;
+		if ( ul != null ){
+			this.set(0, i-1, 0, j-1, ul);
+		}
+		if ( ur != null ){
+			this.set(0, i-1, j, this.n-1, ur);
+		}
+		if ( ll != null ){
+			this.set(i, this.m-1 , 0, j-1, ll);
+		}
+		if ( lr != null ){
+			this.set(i, this.m-1, j, this.n-1, lr);
+		}
+	}
+	
 	public static void main(String[] args){
-		/*
+		
 		FracBigInt[][] test = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("3"),new FracBigInt("4")}};
 		Matrix testmatrix = new Matrix(test);
 		FracBigInt[][] test2 = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("1"),new FracBigInt("2")}};
@@ -274,7 +310,10 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix.dividePW(testmatrix2));
 		System.out.println(testmatrix.dividePW(testmatrix2).min());
 		System.out.println(testmatrix.add(testmatrix2));
-		*/
+		testmatrix.remove(1, 0);
+		System.out.println(testmatrix);
+		
+		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
 		Matrix carry = new Matrix(carryarray);
 		FracBigInt[][] xarray = {{new FracBigInt("-5")},{new FracBigInt("1")},{new FracBigInt("2")},{new FracBigInt("4")}};
@@ -283,7 +322,7 @@ public class Matrix implements MatrixInterface {
 		System.out.println(x);
 		System.out.println(carry.gaussStep(x));
 		System.out.println(carry);
-		
+		*/
 		
 	}
 
