@@ -96,16 +96,15 @@ public class Matrix implements MatrixInterface {
 		FracBigInt min = this.matrix[0][0];
 		for ( int i = 0 ; i<this.m ; i++ ){
 			for ( int j = 0 ; j<this.n ; j++ ){
-				if ( this.matrix[i][j] != null ){
-					min = this.matrix[i][j];
-					break;
+				if ( min == null ){
+					if ( (this.matrix[i][j] != null)){
+						min = this.matrix[i][j];
+					}
 				}
-			}
-		}
-		for ( int i = 0 ; i<this.m ; i++ ){
-			for ( int j = 0 ; j<this.n ; j++ ){
-				if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0 ){
-					min=this.matrix[i][j];
+				else{
+					if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0){
+						min=this.matrix[i][j];
+					}
 				}
 			}
 		}
@@ -140,16 +139,40 @@ public class Matrix implements MatrixInterface {
 				}
 			}
 		}
-		/**
-		for ( int i = 0 ; i<this.m ; i++ ){
-			for ( int j = 0 ; j<this.n ; j++ ){
-				
-			}
-		}
-		*/
 		return result;
 	}
 
+	public int[] argmin2() {
+		int result[] = new int[2];
+		result[0]=-1;
+		result[1]=-1;
+		FracBigInt min = this.matrix[0][0];
+		if ( min != null ){
+			result[0] = 0;
+			result[1] = 0;
+		}
+		for ( int i = 0 ; i<this.m ; i++ ){
+			for ( int j = 0 ; j<this.n ; j++ ){
+				if ( min == null ){
+					if ( (this.matrix[i][j] != null)){
+						min = this.matrix[i][j];
+						result[0] = i;
+						result[1] = j;
+					}
+				}
+				else{
+					if( this.matrix[i][j] != null && this.matrix[i][j].compareTo(min) < 0){
+						min=this.matrix[i][j];
+						result[0] = i;
+						result[1] = j;
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	
 	/**
 	 * needs a Carry-Matrix
 	 * computes one Gauss-Step for the vector x_s=x
@@ -178,7 +201,7 @@ public class Matrix implements MatrixInterface {
 		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
 			throw new IllegalArgumentException("Matrizen passen nicht");
 		}
-		
+		//TODO eventuell entfernen
 		Matrix result = new Matrix(this.m,this.n);
 		
 		for ( int i = 0 ; i<this.m ; i++ ){
@@ -193,6 +216,7 @@ public class Matrix implements MatrixInterface {
 		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
 			throw new IllegalArgumentException("Matrizen passen nicht");
 		}
+		//TODO eventuell entfernen
 		
 		Matrix result = new Matrix(this.m,this.n);
 		
@@ -205,7 +229,31 @@ public class Matrix implements MatrixInterface {
 		}
 		return result;
 	}
-
+	
+	/**
+	 * A method to generate vector consisting of all theta_i
+	 * @param ubound
+	 * @param b
+	 * @param x
+	 * @return theta the theta vector
+	 */
+	private static Matrix generateTheta( int[] B, double[] ubound, MatrixInterface b , MatrixInterface x){
+		int cf = (int) Math.signum(x.get(0,0).toDouble());			//to correct the terms if x_s is in L
+		Matrix theta = new Matrix(b.getM(),1);
+		for ( int i=0 ; i<b.getM(); i++ ){
+			if ( x.get(i+1, 0).toDouble() != 0){
+				if ( x.get(i+1, 0).toDouble()*cf < 0 ){
+					theta.set(i, 0, (new FracBigInt(-cf)).multiply(b.get(i,0).divide(x.get(i+1, 0))));
+				}
+				else{
+					theta.set(i, 0, ((new FracBigInt(ubound[B[i]]).substract(b.get(i, 0))).divide((new FracBigInt(cf)).multiply(x.get(i+1,0)))));
+				}
+			}
+		}
+		return theta;
+	}
+	
+	
 	@Override
 	public FracBigInt get(int i, int j) {
 		return this.matrix[i][j].clone();
@@ -291,8 +339,41 @@ public class Matrix implements MatrixInterface {
 		}
 	}
 	
+	/**
+	 * computes one pivot step
+	 * @param x the column of A multiplied with B^-1
+	 * @param ubound the vector of upper bounds
+	 * @return r the position of the basis vector that has changed (begins with 0)
+	 */
+	public int step(int[] B, Matrix x, double[] ubound){
+		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
+		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
+		int r = theta.argmin()[0];
+		if ( theta.get(r, 0).toDouble() > ubound[r] ){
+			return -1;
+		}
+		r++;
+		FracBigInt xrs = x.get(r,0).invert();
+		Matrix rowr = (Matrix) this.of(r, r, 0, this.n-1);
+		for ( int i=0 ; i<this.m ; i++ ){
+			if ( i==r ){
+				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).multiply(xrs));
+				if ( x.get(0, 0).toDouble() > 0 ){
+					this.set(i, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+				}
+				else{
+					this.set(i, 0, theta.get(r-1, 0));
+				}
+			}
+			else{
+				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
+			}
+		}
+		return r-1;
+	}
+	
 	public static void main(String[] args){
-		
+		/*
 		FracBigInt[][] test = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("3"),new FracBigInt("4")}};
 		Matrix testmatrix = new Matrix(test);
 		FracBigInt[][] test2 = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("1"),new FracBigInt("2")}};
@@ -312,17 +393,19 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix.add(testmatrix2));
 		testmatrix.remove(1, 0);
 		System.out.println(testmatrix);
+		*/
 		
-		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
 		Matrix carry = new Matrix(carryarray);
 		FracBigInt[][] xarray = {{new FracBigInt("-5")},{new FracBigInt("1")},{new FracBigInt("2")},{new FracBigInt("4")}};
 		Matrix x = new Matrix(xarray);
+		double[] bounds = {Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
+		int[] B = {2,3,4};
 		System.out.println(carry);
 		System.out.println(x);
-		System.out.println(carry.gaussStep(x));
+		System.out.println(carry.step(B,x,bounds));
 		System.out.println(carry);
-		*/
+		
 		
 	}
 
