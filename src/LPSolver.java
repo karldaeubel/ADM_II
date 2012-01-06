@@ -326,7 +326,9 @@ public class LPSolver {
 					y.set(0, 0, A.get(0,L.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, L.get(j), L.get(j))).get(0,0)));
 					y.set(1, m, 0, 0, x);
 					FracBigInt mo = stepI(y, B, j);
-					c_j = mo.multiply(c_j);
+					if(mo.compareTo(FracBigInt.ZERO) != 0) {
+						c_j = mo.multiply(c_j);
+					}
 					if(c_j.compareTo(FracBigInt.ZERO) < 0) {
 						c_j = c_j.multiply(new FracBigInt("-1"));
 					}
@@ -376,7 +378,9 @@ public class LPSolver {
 						y.set(0, 0, A.get(0,U.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, U.get(j), U.get(j))).get(0,0)));
 						y.set(1, m, 0, 0, x);
 						FracBigInt mo = stepI(y, B, j);
-						c_j = mo.multiply(c_j);
+						if(mo.compareTo(FracBigInt.ZERO) != 0) {
+							c_j = mo.multiply(c_j);
+						}
 						if(c_j.compareTo(FracBigInt.ZERO) < 0) {
 							c_j = c_j.multiply(new FracBigInt("-1"));
 						}
@@ -482,7 +486,7 @@ public class LPSolver {
 	
 	public static void main(String[] args) {
 		if(args.length == 0) {
-			LPSolver lp = new LPSolver("/home/karl/Desktop/boeing2.lp");
+			LPSolver lp = new LPSolver("/home/karl/Desktop/kb2.lp");
 			lp.solve();
 		}else {
 			for(int i = 0; i < args.length; i++) {
