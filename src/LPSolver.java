@@ -23,14 +23,14 @@ public class LPSolver {
 				long stop = System.nanoTime();
 				System.out.println("Reading Time: " + (stop - start)/1000000. + " ms");
 		} catch (FileNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.out.println("\n" + e1.toString() + "\n\nBeende...");
+			System.exit(1);
 		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.out.println("\n" + e1.toString() + "\n\nBeende...");
+			System.exit(1);
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			System.out.println("\n" + e1.toString() + "\n\nBeende...");
+			System.exit(1);
 		}
 	}
 	
@@ -98,6 +98,7 @@ public class LPSolver {
 		noOfArti = m -noOfLE;
 		int n = m + lp.noOfVariables() + noOfGE;
 		int[] B = new int[m];
+		LinkedList<Integer> L = new LinkedList<Integer>();
 		
 		Carry = new Matrix(m +1, m +1);
 		
@@ -128,6 +129,7 @@ public class LPSolver {
 					sum = sum.substract(zero[i][j]);
 				}
 			}
+			L.add(new Integer(j));
 			zero[0][j] = sum;
 			sum = new FracBigInt("0");
 		}
@@ -142,6 +144,7 @@ public class LPSolver {
 					if(r[i -1] == 1) {
 						B[i -1] = j;
 					}else {
+						L.add(new Integer(j));
 						sum = sum.substract(zero[i][j]);
 					}
 					break;
@@ -158,18 +161,7 @@ public class LPSolver {
 			Carry.set(0, m, i +1, i +1, A.of(0, m, B[i], B[i]));
 		}
 		//System.out.println(A);
-		LinkedList<Integer> L = new LinkedList<Integer>();
 		LinkedList<Integer> U = new LinkedList<Integer>();
-		
-		for(int i = 0; i < lp.noOfVariables(); i++) {
-			L.add(new Integer(noOfArti +i +1));
-		}
-		for(int i = 0; i < lp.noOfConstraints(); i++) {
-			if(lp.sense[i] == LPReader.SENSE_GEQ) {
-				L.add(new Integer(noOfArti + lp.noOfVariables() -noOfEq +i +1));
-			}
-		}
-
 		
 		long start = System.nanoTime();
 		Matrix x = PhaseII(B,L,U);
@@ -312,116 +304,185 @@ public class LPSolver {
 		int m = lp.noOfConstraints();
 		
 		int count = 0;
+		LinkedList<Integer> index = new LinkedList<Integer>();
+		LinkedList<FracBigInt> MIN = new LinkedList<FracBigInt>();
+		LinkedList<Integer> LUindex = new LinkedList<Integer>();
+		LinkedList<Integer> LORU = new LinkedList<Integer>();
+		int rb = (A.getN() -m)/2;
+		if(rb == 0) {rb = 1;}
+		FracBigInt c_j = new FracBigInt("0");
 		while(true) {
-			count++;
-			//Calculate the reduced cost c_j, j in N, and save the index k
-			int k = -1;
-			int l = -1;
-			int u = -1;
-			int v = -1;
-			FracBigInt c_j = new FracBigInt("0");
-			FracBigInt min_L = new FracBigInt();
-			for(int j = 0; j < L.size(); j++) {
-				c_j = A.get(0,L.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, L.get(j), L.get(j))).get(0,0));
-				
-				/*//TODO entfernen?
-				if(c_j.compareTo(FracBigInt.ZERO) > 0) {
+			if(MIN.size() == 0) {
+				System.out.println("neue berechnung!!!!");
+				c_j = FracBigInt.ZERO;
+				for(int j = 0; j < L.size(); j++) {
+					c_j = A.get(0,L.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, L.get(j), L.get(j))).get(0,0));
 					
-				Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, L.get(j), L.get(j) ));
-				Matrix y = new Matrix(new FracBigInt[m +1][1]);
-				y.set(0, 0, A.get(0,L.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, L.get(j), L.get(j))).get(0,0)));
-				y.set(1, m, 0, 0, x);
-				FracBigInt mo = stepI(y, B, j);
-				c_j = mo.multiply(c_j);
-				if(c_j.compareTo(FracBigInt.ZERO) < 0) {
-					c_j = c_j.multiply(new FracBigInt("-1"));
-				}
-				}*/
-				if(c_j.compareTo(min_L) < 0) {
-					min_L = c_j;
-					k = L.get(j);
-					u = j;
-				}
-			}
-			min_L = min_L.multiply(new FracBigInt("-1"));
-			for(int j = 0; j < U.size(); j++) {
-				c_j = A.get(0,U.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, U.get(j), U.get(j))).get(0,0));
-				
-				/*if(c_j.compareTo(FracBigInt.ZERO) > 0) {
-					
-					Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, U.get(j), U.get(j)));
+					//TODO entfernen?
+					if(c_j.compareTo(FracBigInt.ZERO) < 0) {
+						
+					Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, L.get(j), L.get(j) ));
 					Matrix y = new Matrix(new FracBigInt[m +1][1]);
-					y.set(0, 0, A.get(0,U.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, U.get(j), U.get(j))).get(0,0)));
+					y.set(0, 0, A.get(0,L.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, L.get(j), L.get(j))).get(0,0)));
 					y.set(1, m, 0, 0, x);
 					FracBigInt mo = stepI(y, B, j);
 					c_j = mo.multiply(c_j);
 					if(c_j.compareTo(FracBigInt.ZERO) < 0) {
 						c_j = c_j.multiply(new FracBigInt("-1"));
 					}
+					
+					if(MIN.size() < rb) {
+						if(MIN.size() == 0) {
+							MIN.add(c_j);
+							index.add(L.get(j));
+							LUindex.add(j);
+							LORU.add(0);
+						}
+						for(int i = 0; i < MIN.size(); i++) {
+							if(c_j.compareTo(MIN.get(i)) > 0) {
+								MIN.add(i,c_j);
+								index.add(i,L.get(j));
+								LUindex.add(i,j);
+								LORU.add(i,0);
+								break;
+							}
+						}
+					}else {
+						for(int i = 0; i < MIN.size(); i++) {
+							if(c_j.compareTo(MIN.get(i)) > 0) {
+								MIN.remove(i);
+								index.remove(i);
+								LUindex.remove(i);
+								LORU.remove(i);
+								
+								MIN.add(i,c_j);
+								index.add(i,L.get(j));
+								LUindex.add(i,j);
+								LORU.add(i,0);
+								break;
+							}
+						}
 					}
-				*/
-				if(c_j.compareTo(min_L) > 0) {
-					min_L = c_j;
-					l = U.get(j);
-					v = j;
+					}
+				}
+				//min_L = min_L.multiply(new FracBigInt("-1"));
+				for(int j = 0; j < U.size(); j++) {
+					c_j = A.get(0,U.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, U.get(j), U.get(j))).get(0,0));
+					
+					if(c_j.compareTo(FracBigInt.ZERO) > 0) {
+						
+						Matrix x = (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, U.get(j), U.get(j)));
+						Matrix y = new Matrix(new FracBigInt[m +1][1]);
+						y.set(0, 0, A.get(0,U.get(j)).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, U.get(j), U.get(j))).get(0,0)));
+						y.set(1, m, 0, 0, x);
+						FracBigInt mo = stepI(y, B, j);
+						c_j = mo.multiply(c_j);
+						if(c_j.compareTo(FracBigInt.ZERO) < 0) {
+							c_j = c_j.multiply(new FracBigInt("-1"));
+						}
+					
+					if(MIN.size() < rb) {
+						if(MIN.size() == 0) {
+							MIN.add(c_j);
+							index.add(L.get(j));
+							LUindex.add(j);
+							LORU.add(1);
+						}
+						for(int i = 0; i < MIN.size(); i++) {
+							if(c_j.compareTo(MIN.get(i)) > 0) {
+								MIN.add(i,c_j);
+								index.add(i,L.get(j));
+								LUindex.add(i,j);
+								LORU.add(i,1);
+								break;
+							}
+						}
+					}else {
+						for(int i = 0; i < MIN.size(); i++) {
+							if(c_j.compareTo(MIN.get(i)) > 0) {
+								MIN.remove(i);
+								index.remove(i);
+								LUindex.remove(i);
+								LORU.remove(i);
+								
+								MIN.add(i,c_j);
+								index.add(i,L.get(j));
+								LUindex.add(i,j);
+								LORU.add(1);
+								break;
+							}
+						}
+					}
 				}
 			}
-						
-			if(k == -1 && l == -1) {
+			}
+
+			count++;
+			//Calculate the reduced cost c_j, j in N, and save the index k
+			if(MIN.size() == 0) {
 				System.out.println("|----------PhaseII beendet-----------| Count: " + count);
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
-			if(l == -1) {
-				Matrix y = new Matrix(new FracBigInt[m +1][1]);
-				y.set(0, 0, A.get(0,k).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, k, k)).get(0,0)));
-				y.set(1, m, 0, 0, (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, k, k)));
-		//TODO korrekte implementierung in derMatrix klasse...
-		//int r = Carry.gaussStep(y);
-				int r = step(y,B, k);
+					
+			/*if(k == -1 && l == -1) {
+				System.out.println("|----------PhaseII beendet-----------| Count: " + count);
+				return (Matrix) Carry.of(1, m, 0, 0);
+			}
+			*/
+			
+			c_j = A.get(0,index.getFirst()).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
+			if((LORU.getFirst() == 0 && c_j.compareTo(FracBigInt.ZERO) < 0) || (LORU.getFirst() == 1 && c_j.compareTo(FracBigInt.ZERO) > 0)) {
+			Matrix y = new Matrix(new FracBigInt[m +1][1]);
+			y.set(0, 0, A.get(0,index.getFirst()).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, index.getFirst(), index.getFirst())).get(0,0)));
+			y.set(1, m, 0, 0, (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, index.getFirst(), index.getFirst())));
+
+			int r = step(y,B, index.getFirst());
 				
-				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
+			if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
+			if(y.get(0, 0).compareTo(FracBigInt.ZERO) < 0) {
 				if(r < m +1) {
 					int temp = B[r -1];
-					B[r -1] = L.remove(u);
+					B[r -1] = L.remove((int) LUindex.getFirst());
 					
 					if(y.get(r, 0).compareTo(FracBigInt.ZERO) > 0) {
-						L.add(u,temp);
+						L.add(LUindex.getFirst(),temp);
 					}else {
 						U.add(temp);
 					}
 					
 				}else {
-					U.add(L.remove(u));
+					U.add(L.remove((int)LUindex.getFirst()));
 				}
-			} else {
-				Matrix y = new Matrix(new FracBigInt[m +1][1]);
-				y.set(0, 0, A.get(0,l).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, l, l)).get(0,0)));
-				y.set(1, m, 0, 0, (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, l, l)));
-		//TODO korrekte implementierung in derMatrix klasse...
-		//int r = Carry.gaussStep(y);
-				int r = step(y, B, l);
-				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
+			}else {
 				if(r < m +1) {
 					int temp = B[r -1];
-					B[r -1] = U.remove(v);
+					B[r -1] = U.remove((int)LUindex.getFirst());
 					
 					if(y.get(r, 0).compareTo(FracBigInt.ZERO) > 0) {
-						U.add(v,temp);
+						U.add(LUindex.getFirst(),temp);
 					}else {
 						L.add(temp);
 					}
 					
 				}else {
-					L.add(U.remove(v));
+					L.add(U.remove((int)LUindex.getFirst()));
 				}
 			}
+			}
+			MIN.removeFirst();
+			index.removeFirst();
+			LUindex.removeFirst();
+			LORU.removeFirst();
 			System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));
+			if(Carry.get(0, 0).multiply(new FracBigInt("-1")).compareTo(new FracBigInt(6561.71213907)) == 0) {
+				System.out.println();
+			}
 		}
 	}
 	
 	public static void main(String[] args) {
 		if(args.length == 0) {
-			LPSolver lp = new LPSolver("/homes/stud/daeubel/Desktop/ADMII/kb2.lp");
+			LPSolver lp = new LPSolver("/home/karl/Desktop/boeing2.lp");
 			lp.solve();
 		}else {
 			for(int i = 0; i < args.length; i++) {
@@ -575,6 +636,7 @@ public class LPSolver {
 				Matrix rowr = (Matrix) Carry.of(result, result, 1, Carry.getN() -1);
 				for ( int i=0 ; i < Carry.getM() ; i++ ){
 					if (i == result){
+						System.out.println(lp.ubound[k -1 - noOfArti]);
 						Carry.set(i, 0, new FracBigInt(lp.ubound[k -1 - noOfArti]).substract(min));
 						Carry.set(i,i,1,Carry.getN() -1,Carry.of(i,i,1,Carry.getN()-1).multiply(xrs));
 					}
