@@ -20,12 +20,7 @@ public class Matrix implements MatrixInterface {
 		}
 		this.m = matrix.length;
 		this.n = matrix[0].length;
-		this.matrix = new FracBigInt[m][n];
-		for ( int i=0 ; i<m ; i++ ){
-			for ( int j=0 ; j<n ; j++ ){
-				this.matrix[i][j] = matrix[i][j];
-			}
-		}
+		this.matrix = matrix.clone();
 	}
 	
 	public Matrix(int r, int m, int n){
@@ -517,11 +512,11 @@ public class Matrix implements MatrixInterface {
 		System.out.println(carry.step(B,x,bounds));
 		System.out.println(carry);
 		*/
+		long time1;
+		long time2;
 		Matrix test1 = new Matrix(1,10,10);
 		Matrix test2 = new Matrix(1,10,10);
 		Matrix test3 = null;
-		long time1;
-		long time2;
 		//System.out.println(test1);
 		//System.out.println(test2);
 		time1=System.nanoTime();
@@ -534,6 +529,7 @@ public class Matrix implements MatrixInterface {
 		//test3 = test1.altMultiply(test2);
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
+		
 	}
 
 	
