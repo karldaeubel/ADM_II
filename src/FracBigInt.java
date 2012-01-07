@@ -1,7 +1,7 @@
 import java.math.BigInteger;
 import java.util.Arrays;
 
-public class FracBigInt implements Comparable<FracBigInt> {
+public class FracBigInt implements Comparable<FracBigInt>, Cloneable {
 
 	private BigInteger num;
 	private BigInteger denom;
@@ -186,6 +186,7 @@ public class FracBigInt implements Comparable<FracBigInt> {
 		return (this.num.equals(f.num) && this.denom.equals(f.denom));
 	}
 
+	@Override
 	public FracBigInt clone() {
 		return new FracBigInt(this.num.toString(), this.denom.toString());
 	}

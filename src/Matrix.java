@@ -20,7 +20,10 @@ public class Matrix implements MatrixInterface {
 		}
 		this.m = matrix.length;
 		this.n = matrix[0].length;
-		this.matrix = matrix.clone();
+		this.matrix = new FracBigInt[m][n];
+		for ( int i = 0 ; i < this.m ; i++){
+			this.matrix[i] = matrix[i].clone();
+		}
 	}
 	
 	public Matrix(int r, int m, int n){
@@ -432,6 +435,109 @@ public class Matrix implements MatrixInterface {
 		return r-1;
 	}
 	
+	/**
+	 * computes one pivot step
+	 * @param x the column of A multiplied with B^-1
+	 * @param ubound the vector of upper bounds
+	 * @return r the position of the basis vector that has changed (begins with 0)
+	 */
+	public int stepAlt(int[] B, Matrix x, double[] ubound){
+		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
+		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
+		int r = theta.argmin()[0];
+		if ( theta.get(r, 0).toDouble() > ubound[r] ){
+			return -1;
+		}
+		r++;
+		FracBigInt xrs = x.get(r,0).invert();
+		Matrix rowr = (Matrix) this.of(r, r, 0, this.n-1);
+		for ( int i=0 ; i<this.m ; i=i+4 ){
+			MatrixStep ms = null;
+			MatrixStep ms2 = null;
+			MatrixStep ms3 = null;
+			MatrixStep ms4 = null;
+			if ( i==r ){
+				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).multiply(xrs));
+				if ( x.get(0, 0).toDouble() > 0 ){
+					this.set(i, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+				}
+				else{
+					this.set(i, 0, theta.get(r-1, 0));
+				}
+			}
+			else{
+				ms = new MatrixStep(this, B , x , i, rowr, xrs);
+				ms.start();
+			}
+			if ( i+1 < this.m ){	
+				if ( i+1==r ){
+					this.set(i+1,i+1,0,this.n-1,this.of(i+1,i+1,0,this.n-1).multiply(xrs));
+					if ( x.get(0, 0).toDouble() > 0 ){
+						this.set(i+1, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+					}
+					else{
+						this.set(i+1, 0, theta.get(r-1, 0));
+					}
+				}
+				else{
+					ms2 = new MatrixStep(this, B , x , i+1, rowr, xrs);
+					ms2.start();
+				}
+				if ( i+2 < this.m ){
+					if ( i+2==r ){
+						this.set(i+2,i+2,0,this.n-1,this.of(i+2,i+2,0,this.n-1).multiply(xrs));
+						if ( x.get(0, 0).toDouble() > 0 ){
+							this.set(i+2, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+						}
+						else{
+							this.set(i+2, 0, theta.get(r-1, 0));
+						}
+					}
+					else{
+						ms3 = new MatrixStep(this, B , x , i+2, rowr, xrs);
+						ms3.start();
+					}
+					if ( i+3 < this.m ){
+						if ( i+3==r ){
+							this.set(i+3,i+3,0,this.n-1,this.of(i+3,i+3,0,this.n-1).multiply(xrs));
+							if ( x.get(0, 0).toDouble() > 0 ){
+								this.set(i+3, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+							}
+							else{
+								this.set(i+3, 0, theta.get(r-1, 0));
+							}
+						}
+						else{
+							ms4 = new MatrixStep(this, B , x , i+3, rowr, xrs);
+							ms4.start();
+						}
+					}
+				}
+			}
+			
+			
+			try {
+				if( ms != null ){
+					ms.join();
+				}
+				if( ms2 != null ){
+					ms2.join();
+				}
+				if( ms3 != null ){
+					ms3.join();
+				}
+				if( ms4 != null ){
+					ms4.join();
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+		}
+		return r-1;
+	}
+	
 	public double[][] toDouble(){
 		double[][] result = new double[this.m][this.n];
 		for ( int i = 0 ; i < this.m ; i++){
@@ -551,6 +657,7 @@ public class Matrix implements MatrixInterface {
 		testmatrix.remove(1, 0);
 		System.out.println(testmatrix);
 		*/
+		/*
 		long time1;
 		long time2;
 		Matrix test = new Matrix(1,100,100);
@@ -563,19 +670,36 @@ public class Matrix implements MatrixInterface {
 		System.out.println(test.get(0, 99, 0, 99));
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
+		*/
 		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
+		
 		Matrix carry = new Matrix(carryarray);
 		FracBigInt[][] xarray = {{new FracBigInt("-5")},{new FracBigInt("1")},{new FracBigInt("2")},{new FracBigInt("4")}};
 		Matrix x = new Matrix(xarray);
 		double[] bounds = {Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY,Double.POSITIVE_INFINITY};
 		int[] B = {2,3,4};
+		long time1;
+		long time2;
 		
 		System.out.println(carry);
 		System.out.println(x);
-		System.out.println(carry.step(B,x,bounds));
+		time1=System.nanoTime();
+		System.out.println(carry.stepAlt(B,x,bounds));
+		time2=System.nanoTime();
 		System.out.println(carry);
+		System.out.println("zeit_alt: " + (time2-time1));
+		
+		
+		carry = new Matrix(carryarray);
+		System.out.println(carry);
+		time1=System.nanoTime();
+		System.out.println(carry.stepAlt(B,x,bounds));
+		time2=System.nanoTime();
+		System.out.println(carry);
+		System.out.println("zeit_neu: " + (time2-time1));
 		*/
+		
 		/*
 		long time1;
 		long time2;
