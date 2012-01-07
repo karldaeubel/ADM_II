@@ -51,6 +51,58 @@ public class Matrix implements MatrixInterface {
 		}
 		return new Matrix(result);
 	}
+	
+	/**
+	 * bringt nur was bei gro§en Matrizen
+	 * @param i1
+	 * @param i2
+	 * @param j1
+	 * @param j2
+	 * @return
+	 */
+	public Matrix get(int i1, int i2, int j1, int j2){
+		if ( (i1>i2) || (j1>j2) || (i1<0) || (j1<0) || (i2>=this.matrix.length) || (j2>=this.matrix[0].length) ){
+			throw new IllegalArgumentException("falsche Grenzen");
+		}
+		int m = i2-i1+1;
+		int n = j2-j1+1;
+		FracBigInt[][] result = new FracBigInt[m][n];
+		for ( int i=i1 ; i<=i2 ; i=i+4 ){
+			MatrixBuild mb = new MatrixBuild(this.matrix[i],result,i-i1,j1,j2);
+			mb.start();
+			MatrixBuild mb2 = null;
+			MatrixBuild mb3 = null;
+			MatrixBuild mb4 = null;
+			if ( i+1 <= i2 ){
+				mb2 = new MatrixBuild(this.matrix[i+1],result,i+1-i1,j1,j2);
+				mb2.start();
+				if ( i+2 <= i2 ){
+					mb3 = new MatrixBuild(this.matrix[i+2],result,i+2-i1,j1,j2);
+					mb3.start();
+					if ( i+3 <= i2 ){
+						mb4 = new MatrixBuild(this.matrix[i+3],result,i+3-i1,j1,j2);
+						mb4.start();
+					}
+				}
+			}
+			try {
+				mb.join();
+				if ( mb2 != null ){
+					mb2.join();
+					if ( mb3 != null ){
+						mb3.join();
+						if ( mb4 != null ){
+							mb4.join();
+						}
+					}
+				}
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return new Matrix(result);
+	}
 
 	@Override
 	public MatrixInterface multiply(MatrixInterface matrix) {
@@ -486,7 +538,7 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix);
 		System.out.println(testmatrix2);
 		System.out.println(testmatrix.multiply(testmatrix2));
-		System.out.println(testmatrix.of(0,1,0,0));
+		System.out.println(testmatrix.get(0,1,0,0));
 		System.out.println(testmatrix.min());
 		System.out.println(Arrays.toString(testmatrix.argmin()));
 		System.out.println(testmatrix.multiplyPW(testmatrix2));
@@ -498,8 +550,20 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix.add(testmatrix2));
 		testmatrix.remove(1, 0);
 		System.out.println(testmatrix);
-		
-		
+		*/
+		long time1;
+		long time2;
+		Matrix test = new Matrix(1,100,100);
+		System.out.println(test);
+		time1=System.nanoTime();
+		System.out.println(test.of(0, 99, 0, 99));
+		time2 = System.nanoTime();
+		System.out.println("normal: "+(time2-time1));
+		time1=System.nanoTime();
+		System.out.println(test.get(0, 99, 0, 99));
+		time2 = System.nanoTime();
+		System.out.println("thread: "+(time2-time1));
+		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
 		Matrix carry = new Matrix(carryarray);
 		FracBigInt[][] xarray = {{new FracBigInt("-5")},{new FracBigInt("1")},{new FracBigInt("2")},{new FracBigInt("4")}};
@@ -512,6 +576,7 @@ public class Matrix implements MatrixInterface {
 		System.out.println(carry.step(B,x,bounds));
 		System.out.println(carry);
 		*/
+		/*
 		long time1;
 		long time2;
 		Matrix test1 = new Matrix(1,10,10);
@@ -529,7 +594,7 @@ public class Matrix implements MatrixInterface {
 		//test3 = test1.altMultiply(test2);
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
-		
+		*/
 	}
 
 	
