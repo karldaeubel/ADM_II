@@ -19,4 +19,7 @@ public class NonBasis {
 		LorU = lu;
 	}
 	
+	public String toString() {
+		return (index + ":" + LorU);
+	}
 }
