@@ -16,9 +16,7 @@ public class MatrixBuild extends Thread {
 	}
 	
 	public void run(){
-		for ( int j = j1; j <= j2 ; j++){
-			this.matrix[rowind][j-j1] = this.row[j];
-		}
+		System.arraycopy(row,j1,matrix[rowind],0,j2-j1+1);
 	}
 	
 }

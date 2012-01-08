@@ -39,6 +39,7 @@ public class Matrix implements MatrixInterface {
 	}
 	
 	
+	
 	@Override
 	public MatrixInterface of(int i1, int i2, int j1, int j2) {
 		if ( (i1>i2) || (j1>j2) || (i1<0) || (j1<0) || (i2>=this.matrix.length) || (j2>=this.matrix[0].length) ){
@@ -48,9 +49,7 @@ public class Matrix implements MatrixInterface {
 		int n = j2-j1+1;
 		FracBigInt[][] result = new FracBigInt[m][n];
 		for ( int i=i1 ; i<=i2 ; i++ ){
-			for ( int j=j1 ; j<=j2 ; j++ ){
-				result[i-i1][j-j1] = matrix[i][j];
-			}
+			System.arraycopy(matrix[i], j1, result[i], 0, n);
 		}
 		return new Matrix(result);
 	}
@@ -420,7 +419,7 @@ public class Matrix implements MatrixInterface {
 		Matrix rowr = (Matrix) this.of(r, r, 0, this.n-1);
 		for ( int i=0 ; i<this.m ; i++ ){
 			if ( i==r ){
-				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).multiply(xrs));
+				this.set(i,(Matrix) this.of(i,i,0,this.n-1).multiply(xrs));
 				if ( x.get(0, 0).toDouble() > 0 ){
 					this.set(i, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
 				}
@@ -429,14 +428,14 @@ public class Matrix implements MatrixInterface {
 				}
 			}
 			else{
-				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
+				this.set(i,(Matrix) this.of(i,i,0,this.n-1).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(i,0))))));
 			}
 		}
 		return r-1;
 	}
 	
 	/**
-	 * computes one pivot step
+	 * computes one pivot step, uses multiple cores
 	 * @param x the column of A multiplied with B^-1
 	 * @param ubound the vector of upper bounds
 	 * @return r the position of the basis vector that has changed (begins with 0)
@@ -635,6 +634,29 @@ public class Matrix implements MatrixInterface {
 		}
 		return result;
 	}
+	
+	/**
+	 * returns the row i
+	 * @param i
+	 * @return
+	 */
+	public Matrix get(int i){
+		FracBigInt[][] result = new FracBigInt[1][this.n];
+		result[0] = this.matrix[i].clone();
+		return new Matrix(result);
+	}
+	
+	/**
+	 * sets row i
+	 * @param i
+	 */
+	public void set(int i , Matrix row){
+		if ( row.getN() != this.n){
+			throw new IllegalArgumentException("ungleiche LŠnge");
+		}
+		this.matrix[i] = row.matrix[0].clone();
+	}
+	
 	public static void main(String[] args){
 		/*
 		FracBigInt[][] test = {{new FracBigInt("1"),new FracBigInt("2")},{new FracBigInt("3"),new FracBigInt("4")}};
@@ -657,20 +679,20 @@ public class Matrix implements MatrixInterface {
 		testmatrix.remove(1, 0);
 		System.out.println(testmatrix);
 		*/
-		/*
+		
 		long time1;
 		long time2;
 		Matrix test = new Matrix(1,100,100);
 		System.out.println(test);
 		time1=System.nanoTime();
-		System.out.println(test.of(0, 99, 0, 99));
+		System.out.println(test.of(0, 99, 0, 1));
 		time2 = System.nanoTime();
 		System.out.println("normal: "+(time2-time1));
 		time1=System.nanoTime();
-		System.out.println(test.get(0, 99, 0, 99));
+		System.out.println(test.get(0, 99, 0, 1));
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
-		*/
+		
 		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
 		

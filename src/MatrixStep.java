@@ -19,6 +19,6 @@ public class MatrixStep extends Thread {
 	
 	
 	public void run(){
-		matrix.set(row,row,0,matrix.getN()-1,matrix.of(row,row,0,matrix.getN()-1).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(row,0))))));
+		matrix.set(row,(Matrix) matrix.get(row).add(rowr.multiply((new FracBigInt("-1")).multiply(xrs.multiply(x.get(row,0))))));
 	}
 }
