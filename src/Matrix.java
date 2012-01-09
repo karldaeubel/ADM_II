@@ -26,6 +26,12 @@ public class Matrix implements MatrixInterface {
 		}
 	}
 	
+	/**
+	 * constructs a random matrix
+	 * @param r
+	 * @param m
+	 * @param n
+	 */
 	public Matrix(int r, int m, int n){
 		matrix = new FracBigInt[m][n];
 		this.m = m;
@@ -405,7 +411,7 @@ public class Matrix implements MatrixInterface {
 	 * computes one pivot step
 	 * @param x the column of A multiplied with B^-1
 	 * @param ubound the vector of upper bounds
-	 * @return r the position of the basis vector that has changed (begins with 0)
+	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
 	public int step(int[] B, Matrix x, double[] ubound){
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
@@ -438,7 +444,7 @@ public class Matrix implements MatrixInterface {
 	 * computes one pivot step, uses multiple cores
 	 * @param x the column of A multiplied with B^-1
 	 * @param ubound the vector of upper bounds
-	 * @return r the position of the basis vector that has changed (begins with 0)
+	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
 	public int stepAlt(int[] B, Matrix x, double[] ubound){
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
