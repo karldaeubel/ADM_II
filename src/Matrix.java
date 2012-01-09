@@ -54,8 +54,10 @@ public class Matrix implements MatrixInterface {
 		int m = i2-i1+1;
 		int n = j2-j1+1;
 		FracBigInt[][] result = new FracBigInt[m][n];
+		System.out.println(m);
+		System.out.println(n);
 		for ( int i=i1 ; i<=i2 ; i++ ){
-			System.arraycopy(matrix[i], j1, result[i], 0, n);
+			System.arraycopy(matrix[i], j1, result[i-i1], 0, n);
 		}
 		return new Matrix(result);
 	}
