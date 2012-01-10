@@ -1,1 +1,15 @@
 Programmieraufgabe ADM II Linieare Optimierung.
+
+Aufruf in der Konsole:
+
+java LPSolver [Optionen] file
+
+Optionen:
+
+  '-d'     Debugmodus (Ausgabe von aktuellem ZFW etc.)
+  '-x'     Ausgabe der Variablen
+  '-r'     Erweiterte ausgabe des LPReaders
+
+Beispiel:
+
+  java LPSolver -d -x /home/karl/Desktop/kb2.lp

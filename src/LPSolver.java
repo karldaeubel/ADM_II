@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.LinkedList;
 
-
 public class LPSolver {
 	
 	private LPReader lp;
@@ -14,9 +13,60 @@ public class LPSolver {
 	
 	private int noOfArti;
 	
+	private boolean debug;
+	private boolean output;
+	
+	public static void main(String[] args) {
+		System.out.println("|---------------Willkommen---------------|\n" +
+				   "|----------------------------------------|\n" +
+				   "|----------------------------------------|\n" +
+				   "|--------------LP Solver von-------------|\n" +
+				   "|----------------------------------------|\n" +
+				   "|-------------Marcel und Karl------------|\n" +
+				   "|----------------------------------------|\n\n");
+		
+		if(args.length == 0 || args[0].toLowerCase().contains("-h")) {
+			System.out.println("Eingabe:\n\njava LPSolver [Optionen] file\n\nOptionen:\n" +
+					"\n  '-d'     Debugmodus (Ausgabe von aktuellem ZFW etc.)" +
+					"\n  '-x'     Ausgabe der Variablen" +
+					"\n  '-r'     Erweiterte ausgabe des LPReaders" +
+					"\n\nBeispiel:\n\n  java LPSolver -d -x /home/karl/Desktop/kb2.lp\n");
+			/*LPSolver lp = new LPSolver("/home/karl/Desktop/kb2.lp",false);
+			lp.solve();
+			*/
+		}else {
+			boolean out = false;
+			boolean deb = false;
+			boolean rd = false;
+			for(int i = 0; i < args.length; i++) {
+				if(args[i].toLowerCase().equals("-d") || args[i].toLowerCase().equals("debug")) {
+					deb = true;
+				}else if(args[i].toLowerCase().equals("-x") || args[i].toLowerCase().equals("var")) {
+					out = true;
+				}else if(args[i].toLowerCase().equals("-r") || args[i].toLowerCase().equals("read")) {
+					rd = true;
+				}else {
+					System.out.println("Datei: " + args[i] + "\n");
+					LPSolver s = new LPSolver(args[i], deb, out, rd);
+					s.solve();
+				}
+			}
+		}
+	}
+	
+	public LPSolver() {
+		System.out.println("\nBitte geben Sie eine Datei an!\n\nBei hilfe 'java LPSolver -h' eingeben");
+	}
+	
 	public LPSolver(String file) {
-		System.out.println("----------Start the Program!----------");
-		lp = new LPReader(file, false);
+		this (file, false, false, false);
+	}
+	
+	public LPSolver(String file, boolean boo, boolean var, boolean rd) {
+		System.out.println("|---------Start the Program!---------|");
+		debug = boo;
+		output = var;
+		lp = new LPReader(file, rd);
 		try {	
 				long start = System.nanoTime();
 				lp.readLP();
@@ -41,15 +91,15 @@ public class LPSolver {
 		if(x == null) {
 			System.out.println("Das Ausgangsproblem ist laut Phase I nicht lösbar...");
 		}else {
-			System.out.println("Das LP hat folgede optimale Lösung:\n");
+			if(output) {System.out.println("\nDas LP hat folgede optimale Lösung:\n");}
 			FracBigInt sum = new FracBigInt("0");
 			for(int i = 0; i < x.getN(); i++) {
-				System.out.println(lp.variableName(i) + " = " + x.get(0, i).toDouble());
+				if(output) {System.out.println(lp.variableName(i) + " = " + x.get(0, i).toDouble());}
 				sum = sum.add(x.get(0, i).multiply(new FracBigInt(lp.objectiveVector()[i])));
 			}
 			System.out.println("\nZFW: " + sum.toDouble());
 		}
-		System.out.println("Das Lösen des Problems hat " + (stop - start)/1000000. + " ms gedauert!");
+		System.out.println("\nDas Lösen des Problems hat " + (stop - start)/1000000. + " ms gedauert!\n");
 	}
 
 	private Matrix PhaseI() {
@@ -183,7 +233,7 @@ public class LPSolver {
 		long start = System.nanoTime();
 		Matrix x = PhaseII(B,non);
 		long stop = System.nanoTime();
-		System.out.println("Zeit: " + (stop -start));
+		if(debug) {System.out.println("Zeit: " + (stop -start));}
 		if(Carry.get(0, 0).compareTo(FracBigInt.ZERO) != 0) {
 			System.out.println("keine zulässige Lösung!");
 			return null;
@@ -334,7 +384,7 @@ public class LPSolver {
 		FracBigInt c_j = new FracBigInt("0");
 		while(true) {
 			if(MIN.size() == 0) {
-				System.out.println("neue berechnung!!!!");
+				//System.out.println("neue berechnung!!!!");
 				c_j = FracBigInt.ZERO;
 				for(int j = 0; j < non.length; j++) {
 					c_j = A.get(0,non[j].index).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, non[j].index, non[j].index)).get(0,0));
@@ -415,25 +465,11 @@ public class LPSolver {
 					non[LUindex.getFirst()].LorU *= -1;
 				}
 				count++;
-				System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));
+				if(debug) {System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));}
 			}
 			MIN.removeFirst();
 			index.removeFirst();
 			LUindex.removeFirst();
-			
-		}
-	}
-	
-	public static void main(String[] args) {
-		if(args.length == 0) {
-			LPSolver lp = new LPSolver("/home/karl/Desktop/fit1d.lp");
-			lp.solve();
-		}else {
-			for(int i = 0; i < args.length; i++) {
-				System.out.println("Datei: " + args[i]);
-				LPSolver s = new LPSolver(args[i]);
-				s.solve();
-			}
 		}
 	}
 	
