@@ -152,7 +152,7 @@ public class LPReader
        */
       public int noOfConstraints ()
       {
-	 return constrName.length;
+	 return constraint.length;
       }
 
       /**

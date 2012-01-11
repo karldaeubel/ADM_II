@@ -263,18 +263,35 @@ public class LPSolver {
 				}
 				if(t == -1) {
 					System.out.println("Redundant!?!");
-					
-					//TODO zeile in Carry + A entfernen da redundant
+					double[][] constr = new double[lp.noOfConstraints() -1][lp.noOfVariables()];
+					double[] rightH = new double[lp.noOfConstraints() -1];
+					int[] sen = new int[lp.noOfConstraints() -1];
+					count = 0;
+					for(int j = 0; j < lp.noOfConstraints(); j++) {
+						if(j != i) {
+							rightH[count] = lp.rhs[j];
+							sen[count] = lp.sense[j];
+							for(int k = 0; k < lp.noOfVariables(); k++) {
+								constr[count][k] = lp.constraint[j][k];
+							}
+							count++;
+						}
+					}
+					lp.rhs = rightH;
+					lp.sense = sen;
+					lp.constraint = constr;
+					return PhaseI();
 				}
 			}
 		}
-
+		
+		
 		if(noOfArti != 0) {
 			for(int i = 0; i < m; i++) {
 				B[i] = B[i] -noOfArti;
 			}
 		}
-		
+
 		NonBasis[] NON = new NonBasis[lp.noOfVariables() + noOfGE + noOfLE + noOfUb - lp.noOfConstraints()];
 		countNon = 0;
 		for(int i = 0; i < non.length; i++) {

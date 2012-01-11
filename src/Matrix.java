@@ -61,7 +61,7 @@ public class Matrix implements MatrixInterface {
 	}
 	
 	/**
-	 * bringt nur was bei gro§en Matrizen
+	 * bringt nur was bei groï¿½en Matrizen
 	 * @param i1
 	 * @param i2
 	 * @param j1
@@ -360,7 +360,7 @@ public class Matrix implements MatrixInterface {
 	@Override
 	public MatrixInterface add(MatrixInterface matrix) {
 		if ( this.m != matrix.getM() || this.n != matrix.getN() ){
-			throw new IllegalArgumentException("Matrix hat falsche Grš§e");
+			throw new IllegalArgumentException("Matrix hat falsche Grï¿½ï¿½e");
 		}
 		Matrix result = new Matrix(this.m,this.n);
 		for ( int i=0 ; i<this.m ; i++ ){
@@ -658,7 +658,7 @@ public class Matrix implements MatrixInterface {
 	 */
 	public void set(int i , Matrix row){
 		if ( row.getN() != this.n){
-			throw new IllegalArgumentException("ungleiche LŠnge");
+			throw new IllegalArgumentException("ungleiche Lï¿½nge");
 		}
 		this.matrix[i] = row.matrix[0].clone();
 	}
