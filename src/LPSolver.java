@@ -246,12 +246,24 @@ public class LPSolver {
 				for(int j = noOfArti +1; j < At.getN(); j++) {
 					if(At.get(0, j).compareTo(FracBigInt.ZERO) != 0) {
 						for(int l = 0; l < non.length; l++) {
-							if(non[l].index == j && non[l].LorU == NonBasis.L) {
-								gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
-								non[l].index = B[i];
-								non[l].LorU = NonBasis.L;
-								B[i] = j;
-								
+							if(non[l].index == j) {
+								if(non[l].LorU == NonBasis.L) {
+									gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									non[l].index = B[i];
+									non[l].LorU = NonBasis.L;
+									B[i] = j;
+								}else {
+									Matrix temp = ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j));
+									FracBigInt c_j = A.get(0,j).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, j, j)).get(0,0));
+									Carry.set(0, 0, Carry.get(0, 0).add(new FracBigInt(lp.ubound[j -noOfArti]).multiply(c_j)));
+									for(int k = 1; k < Carry.getM(); k++) {
+										Carry.set(k, 0, Carry.get(k, 0).add(new FracBigInt(lp.ubound[j -noOfArti]).multiply(temp.get(j, 0))));
+									}
+									gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									non[l].index = B[i];
+									non[l].LorU = NonBasis.L;
+									B[i] = j;
+								}
 								t = j;
 								break;
 							}
@@ -259,6 +271,7 @@ public class LPSolver {
 						if(t != -1) {break;}
 					}
 				}
+				
 				if(t == -1) {
 					System.out.println("Redundant!?!");
 					double[][] constr = new double[lp.noOfConstraints() -1][lp.noOfVariables()];
@@ -282,7 +295,6 @@ public class LPSolver {
 				}
 			}
 		}
-		
 		
 		if(noOfArti != 0) {
 			for(int i = 0; i < m; i++) {
