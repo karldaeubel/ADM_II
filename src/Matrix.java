@@ -113,7 +113,7 @@ public class Matrix implements MatrixInterface {
 	}
 
 	@Override
-	public MatrixInterface multiply(MatrixInterface matrix) {
+	public MatrixInterface altMultiply(MatrixInterface matrix) {
 		if ( this.n != matrix.getM() ){
 			throw new IllegalArgumentException("Matrizen haben inkompatible Groessen");
 		}
@@ -553,10 +553,10 @@ public class Matrix implements MatrixInterface {
 		return result;
 	}
 	
-	public Matrix altMultiply(Matrix A){
+	public Matrix multiply(Matrix A){
 		Matrix result = new Matrix(this.m , A.getN());
 		for ( int i = 0 ; i < this.m ; i=i+10){
-			MatrixMult mult1 = new MatrixMult(A,i,(Matrix) this.of(i,i,0,A.getN()-1),result);
+			MatrixMult mult1 = new MatrixMult(A,i,(Matrix) this.of(i,i,0,this.getN()-1),result);
 			mult1.start();
 			MatrixMult mult2 = null;
 			MatrixMult mult3 = null;

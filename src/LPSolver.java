@@ -227,8 +227,6 @@ public class LPSolver {
 		for(int i = 0; i < m; i++) {
 			Carry.set(0, m, i +1, i +1, A.of(0, m, B[i], B[i]));
 		}
-		//System.out.println(A);
-		//LinkedList<Integer> U = new LinkedList<Integer>();
 		
 		long start = System.nanoTime();
 		Matrix x = PhaseII(B,non);
@@ -242,14 +240,14 @@ public class LPSolver {
 		Matrix At = null;
 		for(int i = 0; i < B.length; i++) {
 			if(B[i] <= noOfArti) {
-				At = (Matrix) Carry.of(i +1, i +1, 1, m).multiply(A.of(1, m, 0, A.getN() -1));
+				At = ((Matrix) Carry.of(i +1, i +1, 1, m)).multiply((Matrix)A.of(1, m, 0, A.getN() -1));
 				int t = -1;
 				
 				for(int j = noOfArti +1; j < At.getN(); j++) {
 					if(At.get(0, j).compareTo(FracBigInt.ZERO) != 0) {
 						for(int l = 0; l < non.length; l++) {
 							if(non[l].index == j && non[l].LorU == NonBasis.L) {
-								gauss((Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, j, j)),i +1);
+								gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
 								non[l].index = B[i];
 								non[l].LorU = NonBasis.L;
 								B[i] = j;
@@ -340,9 +338,9 @@ public class LPSolver {
 		}
 		
 		Matrix C = (Matrix)(new Matrix(c)).multiply(new FracBigInt("-1"));
-		Matrix pi = (Matrix) C.multiply(Carry.of(1, m, 1, m));
+		Matrix pi = ((Matrix) C).multiply((Matrix)Carry.of(1, m, 1, m));
 		Carry.set(0, 0, 1, m, pi);
-		Carry.set(0, 0, 0, 0, C.multiply(Carry.of(1, m, 0, 0)));
+		Carry.set(0, 0, 0, 0, C.multiply((Matrix)Carry.of(1, m, 0, 0)));
 		
 		System.out.println("|----------PhaseI beendet------------|");
 		
@@ -404,13 +402,13 @@ public class LPSolver {
 				//System.out.println("neue berechnung!!!!");
 				c_j = FracBigInt.ZERO;
 				for(int j = 0; j < non.length; j++) {
-					c_j = A.get(0,non[j].index).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, non[j].index, non[j].index)).get(0,0));
+					c_j = A.get(0,non[j].index).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)).get(0,0));
 					
 					if((non[j].LorU == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[j].LorU == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
 
 						Matrix y = new Matrix(new FracBigInt[m +1][1]);
 						y.set(0, 0, c_j);
-						y.set(1, m, 0, 0, Carry.of(1, m, 1, m).multiply(A.of(1, m, non[j].index, non[j].index)));
+						y.set(1, m, 0, 0, ((Matrix)Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)));
 						FracBigInt mo = stepI(y, B, j);
 						if(mo.compareTo(FracBigInt.ZERO) != 0) {
 							c_j = mo.multiply(c_j);
@@ -457,12 +455,12 @@ public class LPSolver {
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
 			
-			c_j = A.get(0,index.getFirst()).add(Carry.of(0, 0, 1, m).multiply(A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
+			c_j = A.get(0,index.getFirst()).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
 			if((non[LUindex.getFirst()].LorU  == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[LUindex.getFirst()].LorU  == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
 				
 				Matrix y = new Matrix(new FracBigInt[m +1][1]);
 				y.set(0, 0, c_j);
-				y.set(1, m, 0, 0, (Matrix) Carry.of(1, m, 1, m).multiply(A.of(1, m, index.getFirst(), index.getFirst())));
+				y.set(1, m, 0, 0, ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())));
 				
 				int r = step(y,B, index.getFirst());
 				

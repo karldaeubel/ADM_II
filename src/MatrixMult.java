@@ -15,7 +15,7 @@ public class MatrixMult extends Thread {
 	
 	public void run(){
 		for ( int j = 0; j<matrix.getN() ; j++){
-			result.set(row, j, this.col.multiply(this.matrix.of(0,this.matrix.getM()-1,j,j)).get(0, 0));
+			result.set(row, j, this.col.altMultiply(this.matrix.of(0,this.matrix.getM()-1,j,j)).get(0, 0));
 		}
 	}
 }

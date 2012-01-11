@@ -3,7 +3,7 @@ public interface MatrixInterface {
 		
 	public MatrixInterface of(int i1, int i2, int j1, int j2);
 	
-	public MatrixInterface multiply(MatrixInterface matrix);
+	public MatrixInterface altMultiply(MatrixInterface matrix);
 	
 	public MatrixInterface multiply(FracBigInt factor);
 	
