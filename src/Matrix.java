@@ -556,7 +556,7 @@ public class Matrix implements MatrixInterface {
 	public Matrix multiply(Matrix A){
 		Matrix result = new Matrix(this.m , A.getN());
 		for ( int i = 0 ; i < this.m ; i=i+10){
-			MatrixMult mult1 = new MatrixMult(A,i,(Matrix) this.of(i,i,0,this.getN()-1),result);
+			MatrixMult mult1 = new MatrixMult(A,i,(Matrix) this.get(i),result);
 			mult1.start();
 			MatrixMult mult2 = null;
 			MatrixMult mult3 = null;
@@ -568,31 +568,31 @@ public class Matrix implements MatrixInterface {
 			MatrixMult mult9 = null;
 			MatrixMult mult10 = null;
 			if ( i+1 < this.m ){
-				mult2 = new MatrixMult(A,i+1,(Matrix) this.of(i+1,i+1,0,A.getN()-1),result);
+				mult2 = new MatrixMult(A,i+1,(Matrix) this.get(i+1),result);
 				mult2.start();
 				if ( i+2 < this.m ){
-					mult3 = new MatrixMult(A,i+2,(Matrix) this.of(i+2,i+2,0,A.getN()-1),result);
+					mult3 = new MatrixMult(A,i+2,(Matrix) this.get(i+2),result);
 					mult3.start();
 					if ( i+3 < this.m ){
-						mult4 = new MatrixMult(A,i+3,(Matrix) this.of(i+3,i+3,0,A.getN()-1),result);
+						mult4 = new MatrixMult(A,i+3,(Matrix) this.get(i+3),result);
 						mult4.start();
 						if ( i+4 < this.m ){
-							mult5 = new MatrixMult(A,i+4,(Matrix) this.of(i+4,i+4,0,A.getN()-1),result);
+							mult5 = new MatrixMult(A,i+4,(Matrix) this.get(i+4),result);
 							mult5.start();
 							if ( i+5 < this.m ){
-								mult6 = new MatrixMult(A,i+5,(Matrix) this.of(i+5,i+5,0,A.getN()-1),result);
+								mult6 = new MatrixMult(A,i+5,(Matrix) this.get(i+5),result);
 								mult6.start();
 								if ( i+6 < this.m ){
-									mult7 = new MatrixMult(A,i+6,(Matrix) this.of(i+6,i+6,0,A.getN()-1),result);
+									mult7 = new MatrixMult(A,i+6,(Matrix) this.get(i+6),result);
 									mult7.start();
 									if ( i+7 < this.m ){
-										mult8 = new MatrixMult(A,i+7,(Matrix) this.of(i+7,i+7,0,A.getN()-1),result);
+										mult8 = new MatrixMult(A,i+7,(Matrix) this.get(i+7),result);
 										mult8.start();
 										if ( i+8 < this.m ){
-											mult9 = new MatrixMult(A,i+8,(Matrix) this.of(i+8,i+8,0,A.getN()-1),result);
+											mult9 = new MatrixMult(A,i+8,(Matrix) this.get(i+8),result);
 											mult9.start();
 											if ( i+9 < this.m ){
-												mult10 = new MatrixMult(A,i+9,(Matrix) this.of(i+9,i+9,0,A.getN()-1),result);
+												mult10 = new MatrixMult(A,i+9,(Matrix) this.get(i+9),result);
 												mult10.start();
 											}
 										}
@@ -686,6 +686,7 @@ public class Matrix implements MatrixInterface {
 		System.out.println(testmatrix);
 		*/
 		
+		/*
 		long time1;
 		long time2;
 		Matrix test = new Matrix(1,100,100);
@@ -698,6 +699,7 @@ public class Matrix implements MatrixInterface {
 		System.out.println(test.get(0, 99, 0, 1));
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
+		*/
 		
 		/*
 		FracBigInt[][] carryarray = {{FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("10"),FracBigInt.ONE,FracBigInt.ZERO,FracBigInt.ZERO},{new FracBigInt("8"),FracBigInt.ZERO,FracBigInt.ONE,FracBigInt.ZERO},{new FracBigInt("24"),FracBigInt.ZERO,FracBigInt.ZERO,FracBigInt.ONE}};
@@ -728,25 +730,25 @@ public class Matrix implements MatrixInterface {
 		System.out.println("zeit_neu: " + (time2-time1));
 		*/
 		
-		/*
+		
 		long time1;
 		long time2;
 		Matrix test1 = new Matrix(1,10,10);
-		Matrix test2 = new Matrix(1,10,10);
+		Matrix test2 = new Matrix(1,10,1);
 		Matrix test3 = null;
-		//System.out.println(test1);
-		//System.out.println(test2);
+		System.out.println(test1);
+		System.out.println(test2);
 		time1=System.nanoTime();
-		System.out.println(test1.multiply(test2));
+		System.out.println(test1.altMultiply(test2));
 		//test3 = (Matrix) test1.multiply(test2);
 		time2 = System.nanoTime();
 		System.out.println("normal: "+(time2-time1));
 		time1 = System.nanoTime();
-		System.out.println(test1.altMultiply(test2));
+		System.out.println(test1.multiply(test2));
 		//test3 = test1.altMultiply(test2);
 		time2 = System.nanoTime();
 		System.out.println("thread: "+(time2-time1));
-		*/
+		
 	}
 
 	
