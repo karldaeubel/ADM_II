@@ -418,7 +418,7 @@ public class Matrix implements MatrixInterface {
 	 * @param ubound the vector of upper bounds
 	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
-	public int step(int[] B, Matrix x, double[] ubound, int noOfArt){
+	public int step(int[] B, Matrix x, double[] ubound, int noOfArt, int s){
 		double[] uboundnew = new double[ubound.length+noOfArt];
 		System.arraycopy(ubound,0,uboundnew,noOfArt,ubound.length);
 		for ( int i = 0; i<noOfArt ; i++ ){
@@ -428,8 +428,8 @@ public class Matrix implements MatrixInterface {
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
 		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
 		int r = theta.argmin()[0];
-		if ( theta.get(r, 0).toDouble() > ubound[r] ){
-			return -1;
+		if ( r < ubound.length && theta.get(r, 0).toDouble() > ubound[r] ){
+			return this.m+1;
 		}
 		r++;
 		FracBigInt xrs = x.get(r,0).invert();
@@ -438,7 +438,7 @@ public class Matrix implements MatrixInterface {
 			if ( i==r ){
 				this.set(i,(Matrix) this.of(i,i,0,this.n-1).multiply(xrs));
 				if ( x.get(0, 0).toDouble() > 0 ){
-					this.set(i, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+					this.set(i, 0, (new FracBigInt(ubound[s]).substract(theta.get(r-1,0))));
 				}
 				else{
 					this.set(i, 0, theta.get(r-1, 0));
@@ -457,7 +457,7 @@ public class Matrix implements MatrixInterface {
 	 * @param ubound the vector of upper bounds
 	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
-	public int stepAlt(int[] B, Matrix x, double[] ubound, int noOfArt){
+	public int stepAlt(int[] B, Matrix x, double[] ubound, int noOfArt, int s){
 		double[] uboundnew = new double[ubound.length+noOfArt];
 		System.arraycopy(ubound,0,uboundnew,noOfArt,ubound.length);
 		for ( int i = 0; i<noOfArt ; i++ ){
@@ -467,8 +467,8 @@ public class Matrix implements MatrixInterface {
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
 		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
 		int r = theta.argmin()[0];
-		if ( theta.get(r, 0).toDouble() > ubound[r] ){
-			return -1;
+		if ( r<ubound.length && theta.get(r, 0).toDouble() > ubound[r] ){
+			return this.m+1;
 		}
 		r++;
 		FracBigInt xrs = x.get(r,0).invert();
@@ -481,7 +481,7 @@ public class Matrix implements MatrixInterface {
 			if ( i==r ){
 				this.set(i,i,0,this.n-1,this.of(i,i,0,this.n-1).multiply(xrs));
 				if ( x.get(0, 0).toDouble() > 0 ){
-					this.set(i, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+					this.set(i, 0, (new FracBigInt(ubound[s]).substract(theta.get(r-1,0))));
 				}
 				else{
 					this.set(i, 0, theta.get(r-1, 0));
@@ -495,7 +495,7 @@ public class Matrix implements MatrixInterface {
 				if ( i+1==r ){
 					this.set(i+1,i+1,0,this.n-1,this.of(i+1,i+1,0,this.n-1).multiply(xrs));
 					if ( x.get(0, 0).toDouble() > 0 ){
-						this.set(i+1, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+						this.set(i+1, 0, (new FracBigInt(ubound[s]).substract(theta.get(r-1,0))));
 					}
 					else{
 						this.set(i+1, 0, theta.get(r-1, 0));
@@ -509,7 +509,7 @@ public class Matrix implements MatrixInterface {
 					if ( i+2==r ){
 						this.set(i+2,i+2,0,this.n-1,this.of(i+2,i+2,0,this.n-1).multiply(xrs));
 						if ( x.get(0, 0).toDouble() > 0 ){
-							this.set(i+2, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+							this.set(i+2, 0, (new FracBigInt(ubound[s]).substract(theta.get(r-1,0))));
 						}
 						else{
 							this.set(i+2, 0, theta.get(r-1, 0));
@@ -523,7 +523,7 @@ public class Matrix implements MatrixInterface {
 						if ( i+3==r ){
 							this.set(i+3,i+3,0,this.n-1,this.of(i+3,i+3,0,this.n-1).multiply(xrs));
 							if ( x.get(0, 0).toDouble() > 0 ){
-								this.set(i+3, 0, (new FracBigInt(ubound[r-1]).substract(theta.get(r-1,0))));
+								this.set(i+3, 0, (new FracBigInt(ubound[s]).substract(theta.get(r-1,0))));
 							}
 							else{
 								this.set(i+3, 0, theta.get(r-1, 0));

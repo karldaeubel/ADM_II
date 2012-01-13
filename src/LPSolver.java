@@ -515,9 +515,9 @@ public class LPSolver {
 				//int r = step(y,B, best.getFirst().colIndex);
 				int r;
 				if(core) {
-					r = Carry.stepAlt(B, y, lp.ubound);
+					r = Carry.stepAlt(B, y, lp.ubound, noOfArti, best.getFirst().colIndex);
 				}else {
-					r = Carry.step(B, y, lp.ubound);
+					r = Carry.step(B, y, lp.ubound, noOfArti, best.getFirst().colIndex);
 				}
 				r++;
 				
