@@ -512,7 +512,13 @@ public class LPSolver {
 					y.set(1, m, 0, 0, Carry.of(1, m, 1, m).altMultiply(A.of(1, m, best.getFirst().colIndex, best.getFirst().colIndex)));
 				}
 				
-				int r = step(y,B, best.getFirst().colIndex);
+				//int r = step(y,B, best.getFirst().colIndex);
+				int r;
+				if(core) {
+					r = Carry.stepAlt(B, y, lp.ubound);
+				}else {
+					r = Carry.step(B, y, lp.ubound);
+				}
 				
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 			
