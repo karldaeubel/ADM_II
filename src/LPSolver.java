@@ -15,6 +15,7 @@ public class LPSolver {
 	
 	private boolean debug;
 	private boolean output;
+	private boolean core;
 	
 	public static void main(String[] args) {
 		System.out.println("|---------------Willkommen---------------|\n" +
@@ -26,28 +27,43 @@ public class LPSolver {
 				   "|----------------------------------------|\n\n");
 		
 		if(args.length == 0 || args[0].toLowerCase().contains("-h")) {
-			System.out.println("Eingabe:\n\njava LPSolver [Optionen] file\n\nOptionen:\n" +
-					"\n  '-d'     Debugmodus (Ausgabe von aktuellem ZFW etc.)" +
-					"\n  '-x'     Ausgabe der Variablen" +
-					"\n  '-r'     Erweiterte ausgabe des LPReaders" +
-					"\n\nBeispiel:\n\n  java LPSolver -d -x /home/karl/Desktop/kb2.lp\n");
-			/*LPSolver lp = new LPSolver("/home/karl/Desktop/kb2.lp",false);
-			lp.solve();
-			*/
+			System.out.println("Eingabe:\n\njava LPSolver [Optionen] file1 file2 ..." + 
+					"\n\nOptionen:\n" +
+					"\n  '-d' oder 'debug'    Debugmodus (Ausgabe von aktuellem ZFW, red. Kosten, etc.)" +
+					"\n  '-x' oder 'var'      Ausgabe der Variablen einer opt. Lösung" +
+					"\n  '-r' oder 'read'     Erweiterte Ausgabe des LPReaders" +
+					"\n  '-c' oder 'core'     Optionale Benutzung von mehreren Kernen bei der Multiplikation" +
+					"\n  '-a' oder 'all'      Äquivalent zu -d -x -r -c auf true" +
+					"\n\n  Alle Argumente (außer -a) sind wie Schalter. Zweimalige Eingabe bringt die Variable in den ursprünglichen Zustand" +
+					"\n\nBeispiele:\n" +
+					"\n  java LPSolver -d -x /home/karl/kb2.lp" +
+					"\n  <=>  java LPSolver -a -r -c /home/karl/kb2.lp" +
+					"\n  <=>  java LPSolver -x -d -d -d -r -r /home/karl/kb2.lp" +
+					"\n\n  java LPSolver -d -x /home/karl/kb2.lp -d -x /home/karl/afiro.lp" +
+					"\n  <=>  java LPSolver -a -r -c /home/karl/kb2.lp -a -x -d -r -c /home/karl/afiro.lp" +
+					"");
 		}else {
 			boolean out = false;
 			boolean deb = false;
 			boolean rd = false;
+			boolean co = false;
 			for(int i = 0; i < args.length; i++) {
 				if(args[i].toLowerCase().equals("-d") || args[i].toLowerCase().equals("debug")) {
-					deb = true;
+					deb = !deb;
 				}else if(args[i].toLowerCase().equals("-x") || args[i].toLowerCase().equals("var")) {
-					out = true;
+					out = !out;
 				}else if(args[i].toLowerCase().equals("-r") || args[i].toLowerCase().equals("read")) {
+					rd = !rd;
+				}else if(args[i].toLowerCase().equals("-c") || args[i].toLowerCase().equals("core")){
+					co = !co;
+				}else if(args[i].toLowerCase().equals("-a") || args[i].toLowerCase().equals("all")){
+					deb = true;
+					out = true;
 					rd = true;
+					co = true;
 				}else {
 					System.out.println("Datei: " + args[i] + "\n");
-					LPSolver s = new LPSolver(args[i], deb, out, rd);
+					LPSolver s = new LPSolver(args[i], deb, out, rd, co);
 					s.solve();
 				}
 			}
@@ -59,13 +75,14 @@ public class LPSolver {
 	}
 	
 	public LPSolver(String file) {
-		this (file, false, false, false);
+		this (file, false, false, false, false);
 	}
 	
-	public LPSolver(String file, boolean boo, boolean var, boolean rd) {
+	public LPSolver(String file, boolean boo, boolean var, boolean rd, boolean co) {
 		System.out.println("|---------Start the Program!---------|");
 		debug = boo;
 		output = var;
+		core = co;
 		lp = new LPReader(file, rd);
 		try {	
 				long start = System.nanoTime();
@@ -240,7 +257,11 @@ public class LPSolver {
 		Matrix At = null;
 		for(int i = 0; i < B.length; i++) {
 			if(B[i] <= noOfArti) {
-				At = ((Matrix) Carry.of(i +1, i +1, 1, m)).multiply((Matrix)A.of(1, m, 0, A.getN() -1));
+				if(core) {
+					At = ((Matrix) Carry.of(i +1, i +1, 1, m)).multiply((Matrix)A.of(1, m, 0, A.getN() -1));
+				}else {
+					At = (Matrix) Carry.of(i +1, i +1, 1, m).altMultiply(A.of(1, m, 0, A.getN() -1));
+				}
 				int t = -1;
 				
 				for(int j = noOfArti +1; j < At.getN(); j++) {
@@ -248,18 +269,32 @@ public class LPSolver {
 						for(int l = 0; l < non.length; l++) {
 							if(non[l].index == j) {
 								if(non[l].LorU == NonBasis.L) {
-									gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									if(core) {
+										gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									}else {
+										gauss((Matrix) Carry.of(1, m, 1, m).altMultiply(A.of(1, m, j, j)),i +1);
+									}
 									non[l].index = B[i];
 									non[l].LorU = NonBasis.L;
 									B[i] = j;
 								}else {
-									Matrix temp = ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j));
-									FracBigInt c_j = A.get(0,j).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, j, j)).get(0,0));
+									Matrix temp;
+									if(core) {
+										temp = ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j));
+									}else {
+										temp = (Matrix) Carry.of(1, m, 1, m).altMultiply(A.of(1, m, j, j));
+									}
+									FracBigInt c_j = Carry.of(0, 0, 1, m).altMultiply(A.of(1, m, j, j)).get(0,0);
+
 									Carry.set(0, 0, Carry.get(0, 0).add(new FracBigInt(lp.ubound[j -noOfArti]).multiply(c_j)));
 									for(int k = 1; k < Carry.getM(); k++) {
-										Carry.set(k, 0, Carry.get(k, 0).add(new FracBigInt(lp.ubound[j -noOfArti]).multiply(temp.get(j, 0))));
+										Carry.set(k, 0, Carry.get(k, 0).add(new FracBigInt(lp.ubound[j -noOfArti]).multiply(temp.get(k -1, 0))));
 									}
-									gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									if(core) {
+										gauss(((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, j, j)),i +1);
+									}else {
+										gauss((Matrix) Carry.of(1, m, 1, m).altMultiply(A.of(1, m, j, j)),i +1);
+									}
 									non[l].index = B[i];
 									non[l].LorU = NonBasis.L;
 									B[i] = j;
@@ -350,9 +385,14 @@ public class LPSolver {
 		}
 		
 		Matrix C = (Matrix)(new Matrix(c)).multiply(new FracBigInt("-1"));
-		Matrix pi = ((Matrix) C).multiply((Matrix)Carry.of(1, m, 1, m));
+		Matrix pi;
+		if(core) {
+			pi = ((Matrix) C).multiply((Matrix)Carry.of(1, m, 1, m));
+		}else {
+			pi = (Matrix) C.altMultiply(Carry.of(1, m, 1, m));
+		}
 		Carry.set(0, 0, 1, m, pi);
-		Carry.set(0, 0, 0, 0, C.multiply((Matrix)Carry.of(1, m, 0, 0)));
+		Carry.set(0, 0, 0, 0, C.altMultiply((Matrix)Carry.of(1, m, 0, 0)));
 		
 		System.out.println("|----------PhaseI beendet------------|");
 		
@@ -388,7 +428,7 @@ public class LPSolver {
 		FracBigInt xrs = at.get(r -1,0).invert();
 		Matrix rowr = (Matrix) Carry.of(r, r, 0, Carry.getN()-1);
 
-		for ( int i=1 ; i<Carry.getM() ; i++ ){
+		for ( int i=1 ; i < Carry.getM() ; i++ ){
 			if ( i==r ){
 				Carry.set(i,i,0,Carry.getN()-1,Carry.of(i,i,0,Carry.getN()-1).multiply(xrs));
 			}
@@ -414,13 +454,18 @@ public class LPSolver {
 				//System.out.println("neue berechnung!!!!");
 				c_j = FracBigInt.ZERO;
 				for(int j = 0; j < non.length; j++) {
-					c_j = A.get(0,non[j].index).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)).get(0,0));
-					
+					//c_j = A.get(0,non[j].index).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)).get(0,0));
+					c_j = A.get(0,non[j].index).add(Carry.of(0, 0, 1, m).altMultiply(A.of(1, m, non[j].index, non[j].index)).get(0,0));
+
 					if((non[j].LorU == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[j].LorU == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
 
 						Matrix y = new Matrix(new FracBigInt[m +1][1]);
 						y.set(0, 0, c_j);
-						y.set(1, m, 0, 0, ((Matrix)Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)));
+						if(core) {
+							y.set(1, m, 0, 0, ((Matrix)Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)));
+						}else {
+							y.set(1, m, 0, 0, (Matrix)Carry.of(1, m, 1, m).altMultiply(A.of(1, m, non[j].index, non[j].index)));
+						}
 						FracBigInt mo = stepI(y, B, j);
 						if(mo.compareTo(FracBigInt.ZERO) != 0) {
 							c_j = mo.multiply(c_j);
@@ -467,21 +512,25 @@ public class LPSolver {
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
 			
-			c_j = A.get(0,index.getFirst()).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
+			c_j = A.get(0,index.getFirst()).add(Carry.of(0, 0, 1, m).altMultiply(A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
 			if((non[LUindex.getFirst()].LorU  == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[LUindex.getFirst()].LorU  == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
-				
+				if(debug) {System.out.println("reduced cost: " + c_j + " L/U: " + non[LUindex.getFirst()].LorU);}
 				Matrix y = new Matrix(new FracBigInt[m +1][1]);
 				y.set(0, 0, c_j);
-				y.set(1, m, 0, 0, ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())));
+				if(core) {
+					y.set(1, m, 0, 0, ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())));
+				}else {
+					y.set(1, m, 0, 0, Carry.of(1, m, 1, m).altMultiply(A.of(1, m, index.getFirst(), index.getFirst())));
+				}
 				
 				int r = step(y,B, index.getFirst());
 				
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 			
 				if(r < m +1) {
+					if(debug) {System.out.println("old basis var: " + B[r -1] + " new basis var: " + non[LUindex.getFirst()].index);}
 					int temp = B[r -1];
 					B[r -1] = non[LUindex.getFirst()].index;
-					//B[r -1] = L.remove((int) LUindex.getFirst());
 				
 					non[LUindex.getFirst()].index = temp;
 				

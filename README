@@ -1,15 +1,26 @@
 Programmieraufgabe ADM II Linieare Optimierung.
 
+Zur Lösung von LP's im Dateiformat .lp!
+
 Aufruf in der Konsole:
 
 java LPSolver [Optionen] file
 
 Optionen:
 
-  '-d'     Debugmodus (Ausgabe von aktuellem ZFW etc.)
-  '-x'     Ausgabe der Variablen
-  '-r'     Erweiterte ausgabe des LPReaders
+  '-d' oder 'debug'    Debugmodus (Ausgabe von aktuellem ZFW, red. Kosten, etc.)
+  '-x' oder 'var'      Ausgabe der Variablen einer opt. Lösung
+  '-r' oder 'read'     Erweiterte Ausgabe des LPReaders
+  '-c' oder 'core'     Optionale Benutzung von mehreren Kernen bei der Multiplikation
+  '-a' oder 'all'      Äquivalent zu -d -x -r -c auf true
+  
+  Alle Argumente (außer -a) sind wie Schalter. Zweimalige Eingabe bringt die Variable in den ursprünglichen Zustand
+  
+Beispiele:
 
-Beispiel:
-
-  java LPSolver -d -x /home/karl/Desktop/kb2.lp
+       java LPSolver -d -x /home/karl/kb2.lp
+  <=>  java LPSolver -a -r -c /home/karl/kb2.lp
+  <=>  java LPSolver -x -d -d -d -r -r /home/karl/kb2.lp
+  
+       java LPSolver -d -x /home/karl/kb2.lp -d -x /home/karl/afiro.lp
+  <=>  java LPSolver -a -r -c /home/karl/kb2.lp -a -x -d -r -c /home/karl/afiro.lp
