@@ -314,7 +314,12 @@ public class Matrix implements MatrixInterface {
 					theta.set(i, 0, (new FracBigInt(-cf)).multiply(b.get(i,0).divide(x.get(i+1, 0))));
 				}
 				else{
-					theta.set(i, 0, ((new FracBigInt(ubound[B[i]]).substract(b.get(i, 0))).divide((new FracBigInt(cf)).multiply(x.get(i+1,0)))));
+					if ( B[i]<ubound.length){
+						theta.set(i, 0, ((new FracBigInt(ubound[B[i]]).substract(b.get(i, 0))).divide((new FracBigInt(cf)).multiply(x.get(i+1,0)))));
+					}
+					else{
+						theta.set(i, 0, new FracBigInt(Double.POSITIVE_INFINITY));
+					}
 				}
 			}
 		}
@@ -413,7 +418,13 @@ public class Matrix implements MatrixInterface {
 	 * @param ubound the vector of upper bounds
 	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
-	public int step(int[] B, Matrix x, double[] ubound){
+	public int step(int[] B, Matrix x, double[] ubound, int noOfArt){
+		double[] uboundnew = new double[ubound.length+noOfArt];
+		System.arraycopy(ubound,0,uboundnew,noOfArt,ubound.length);
+		for ( int i = 0; i<noOfArt ; i++ ){
+			uboundnew[i] = Double.POSITIVE_INFINITY;
+		}
+		ubound = uboundnew;
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
 		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
 		int r = theta.argmin()[0];
@@ -446,7 +457,13 @@ public class Matrix implements MatrixInterface {
 	 * @param ubound the vector of upper bounds
 	 * @return r the position of the basis vector that has changed (begins with 0) or -1 if no basis vector has changed
 	 */
-	public int stepAlt(int[] B, Matrix x, double[] ubound){
+	public int stepAlt(int[] B, Matrix x, double[] ubound, int noOfArt){
+		double[] uboundnew = new double[ubound.length+noOfArt];
+		System.arraycopy(ubound,0,uboundnew,noOfArt,ubound.length);
+		for ( int i = 0; i<noOfArt ; i++ ){
+			uboundnew[i] = Double.POSITIVE_INFINITY;
+		}
+		ubound = uboundnew;
 		Matrix b = (Matrix) this.of(1,this.m-1,0,0);
 		Matrix theta = Matrix.generateTheta(B,ubound, b, x);
 		int r = theta.argmin()[0];
