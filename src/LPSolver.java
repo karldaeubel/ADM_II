@@ -443,15 +443,12 @@ public class LPSolver {
 		int m = lp.noOfConstraints();
 		
 		int count = 0;
-		LinkedList<Integer> index = new LinkedList<Integer>();
-		LinkedList<FracBigInt> MIN = new LinkedList<FracBigInt>();
-		LinkedList<Integer> LUindex = new LinkedList<Integer>();
+		LinkedList<BestColElement> best = new LinkedList<BestColElement>();
 		int rb = (A.getN() -m)/3;
 		if(rb == 0) {rb = 1;}
 		FracBigInt c_j = new FracBigInt("0");
 		while(true) {
-			if(MIN.size() == 0) {
-				//System.out.println("neue berechnung!!!!");
+			if(best.size() == 0) {
 				c_j = FracBigInt.ZERO;
 				for(int j = 0; j < non.length; j++) {
 					//c_j = A.get(0,non[j].index).add(((Matrix)Carry.of(0, 0, 1, m)).multiply((Matrix)A.of(1, m, non[j].index, non[j].index)).get(0,0));
@@ -474,31 +471,23 @@ public class LPSolver {
 							c_j = c_j.multiply(new FracBigInt("-1"));
 						}
 					
-						if(MIN.size() < rb) {
-							if(MIN.size() == 0) {
-								MIN.add(c_j);
-								index.add(non[j].index);
-								LUindex.add(j);
-							}else if(MIN.getLast().compareTo(c_j) >= 0) {
-								MIN.add(c_j);
-								index.add(non[j].index);
-								LUindex.add(j);
+						if(best.size() < rb) {
+							if(best.size() == 0) {
+								best.add(new BestColElement(non[j].index, j, c_j));
+							}else if(best.getLast().redcost.compareTo(c_j) >= 0) {
+								best.add(new BestColElement(non[j].index, j, c_j));
 							}else {
-								for(int i = 0; i < MIN.size(); i++) {
-									if(c_j.compareTo(MIN.get(i)) > 0) {
-										MIN.add(i,c_j);
-										index.add(i,non[j].index);
-										LUindex.add(i,j);
+								for(int i = 0; i < best.size(); i++) {
+									if(c_j.compareTo(best.get(i).redcost) > 0) {
+										best.add(i, new BestColElement(non[j].index, j, c_j));
 										break;
 									}
 								}
 							}
 						}else {
-							for(int i = 0; i < MIN.size(); i++) {
-								if(c_j.compareTo(MIN.get(i)) > 0) {
-									MIN.set(i, c_j);
-									index.set(i, non[j].index);
-									LUindex.set(i, j);
+							for(int i = 0; i < best.size(); i++) {
+								if(c_j.compareTo(best.get(i).redcost) > 0) {
+									best.set(i, new BestColElement(non[j].index, j, c_j));
 									break;
 								}
 							}
@@ -507,45 +496,43 @@ public class LPSolver {
 				}
 			}
 			
-			if(MIN.size() == 0) {
+			if(best.size() == 0) {
 				System.out.println("|----------PhaseII beendet-----------| Count: " + count);
 				return (Matrix) Carry.of(1, m, 0, 0);
 			}
 			
-			c_j = A.get(0,index.getFirst()).add(Carry.of(0, 0, 1, m).altMultiply(A.of(1, m, index.getFirst(), index.getFirst())).get(0,0));
-			if((non[LUindex.getFirst()].LorU  == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[LUindex.getFirst()].LorU  == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
-				if(debug) {System.out.println("reduced cost: " + c_j + " L/U: " + non[LUindex.getFirst()].LorU);}
+			c_j = A.get(0,best.getFirst().colIndex).add(Carry.of(0, 0, 1, m).altMultiply(A.of(1, m, best.getFirst().colIndex, best.getFirst().colIndex)).get(0,0));
+			if((non[best.getFirst().nonBasisIndex].LorU  == NonBasis.L && c_j.compareTo(FracBigInt.ZERO) < 0) || (non[best.getFirst().nonBasisIndex].LorU  == NonBasis.U && c_j.compareTo(FracBigInt.ZERO) > 0)) {
+				if(debug) {System.out.println("reduced cost: " + c_j + " L/U: " + non[best.getFirst().nonBasisIndex].LorU);}
 				Matrix y = new Matrix(new FracBigInt[m +1][1]);
 				y.set(0, 0, c_j);
 				if(core) {
-					y.set(1, m, 0, 0, ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, index.getFirst(), index.getFirst())));
+					y.set(1, m, 0, 0, ((Matrix) Carry.of(1, m, 1, m)).multiply((Matrix)A.of(1, m, best.getFirst().colIndex, best.getFirst().colIndex)));
 				}else {
-					y.set(1, m, 0, 0, Carry.of(1, m, 1, m).altMultiply(A.of(1, m, index.getFirst(), index.getFirst())));
+					y.set(1, m, 0, 0, Carry.of(1, m, 1, m).altMultiply(A.of(1, m, best.getFirst().colIndex, best.getFirst().colIndex)));
 				}
 				
-				int r = step(y,B, index.getFirst());
+				int r = step(y,B, best.getFirst().colIndex);
 				
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
 			
 				if(r < m +1) {
-					if(debug) {System.out.println("old basis var: " + B[r -1] + " new basis var: " + non[LUindex.getFirst()].index);}
+					if(debug) {System.out.println("old basis var: " + B[r -1] + " new basis var: " + non[best.getFirst().nonBasisIndex].index);}
 					int temp = B[r -1];
-					B[r -1] = non[LUindex.getFirst()].index;
+					B[r -1] = non[best.getFirst().nonBasisIndex].index;
 				
-					non[LUindex.getFirst()].index = temp;
+					non[best.getFirst().nonBasisIndex].index = temp;
 				
 					if(y.get(r, 0).compareTo(FracBigInt.ZERO) < 0) {
-						non[LUindex.getFirst()].LorU *= -1;
+						non[best.getFirst().nonBasisIndex].LorU *= -1;
 					}
 				}else {
-					non[LUindex.getFirst()].LorU *= -1;
+					non[best.getFirst().nonBasisIndex].LorU *= -1;
 				}
 				count++;
 				if(debug) {System.out.println("z: " + Carry.get(0, 0).multiply(new FracBigInt("-1")));}
 			}
-			MIN.removeFirst();
-			index.removeFirst();
-			LUindex.removeFirst();
+			best.removeFirst();
 		}
 	}
 	
