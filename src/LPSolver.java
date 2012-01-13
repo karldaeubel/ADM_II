@@ -519,9 +519,10 @@ public class LPSolver {
 				}else {
 					r = Carry.step(B, y, lp.ubound);
 				}
+				r++;
 				
 				if(r == -1) {System.out.println("Unbeschrenkt!");return null;}
-			
+
 				if(r < m +1) {
 					if(debug) {System.out.println("old basis var: " + B[r -1] + " new basis var: " + non[best.getFirst().nonBasisIndex].index);}
 					int temp = B[r -1];
